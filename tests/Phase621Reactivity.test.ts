@@ -196,7 +196,7 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
     expect(byName('MissionProp_m4-emergency-switch').visible).toBe(false);
     expect(byName('MissionProp_m5-empty-display').visible).toBe(false);
     expect(byName('MissionProp_m5-clue-bag').visible).toBe(false);
-    expect(byName('MissionProp_m5-midnight-noir-bottle').visible).toBe(false);
+    expect(byName('MissionProp_m5-jpg-le-male-bottle').visible).toBe(false);
 
     // Advance cleanly through M04
     s.mm.notifyCameraInspected(3);
@@ -239,7 +239,7 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
     expect(byName('MissionProp_m4-emergency-switch').visible).toBe(true);
     expect(byName('MissionProp_m5-empty-display').visible).toBe(true);
     expect(byName('MissionProp_m5-clue-bag').visible).toBe(false);
-    expect(byName('MissionProp_m5-midnight-noir-bottle').visible).toBe(false);
+    expect(byName('MissionProp_m5-jpg-le-male-bottle').visible).toBe(false);
 
     s.mm.update(0.016, WORLD_ANCHORS.showroom.m5Reach.position.clone(), {
       committedFloor: 2,
@@ -256,12 +256,12 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
     while (s.dialogue.isActive()) s.dialogue.advance();
     s.props.update(0.05);
     expect(byName('MissionProp_m5-clue-bag').visible).toBe(true);
-    expect(byName('MissionProp_m5-midnight-noir-bottle').visible).toBe(false);
+    expect(byName('MissionProp_m5-jpg-le-male-bottle').visible).toBe(false);
 
     s.mm.notifyInteract('m5-clue-bag');
     while (s.dialogue.isActive()) s.dialogue.advance();
     s.props.update(0.05);
-    expect(byName('MissionProp_m5-midnight-noir-bottle').visible).toBe(true);
+    expect(byName('MissionProp_m5-jpg-le-male-bottle').visible).toBe(true);
   });
 
   it('3. builds Maya with a distinct female IKEA employee model while leaving Danny and Yossi unchanged', () => {

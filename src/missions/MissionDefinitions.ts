@@ -182,12 +182,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
     number: 3,
     title: 'THE MISSING WATCH',
     titleKey: 'm3.title',
-    description: 'An expensive watch disappeared from the Showroom. Question staff and inspect clues to track it down.',
+    description:
+      'An 18k gold Rolex Daytona disappeared from the Showroom. Question staff and inspect clues to track it down.',
     descriptionKey: 'm3.desc',
     openingPhoneMessage: {
       sender: 'SHIFT MANAGER',
       senderKey: 'speaker.SHIFT MANAGER',
-      text: 'Report from Showroom: an expensive watch vanished! Question staff and inspect clues to track it down.',
+      text: 'HIGH-VALUE ALERT: A gold Rolex Daytona vanished from the Showroom! Question staff and recover it immediately.',
       textKey: 'm3.phone',
     },
     objectives: [
@@ -217,13 +218,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'Someone left an expensive watch near the MALM bed display earlier, then it vanished!',
+              text: 'Management is freaking out—a solid 18k gold Rolex Daytona left near the MALM bed display just vanished!',
               textKey: 'm3.danny.1',
             },
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'I will check the MALM bedroom display and ask around the floor.',
+              text: 'A gold Rolex Daytona?! Checking the MALM bedroom display and questioning the floor now.',
               textKey: 'm3.danny.2',
             },
           ],
@@ -231,13 +232,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'MAYA (LIVING ROOM)',
               speakerKey: 'speaker.MAYA (LIVING ROOM)',
-              text: 'I saw someone hurrying past the Living Room with an empty watch box near the MALM bed display. They looked hungry!',
+              text: 'Someone hurried past the Living Room clutching an empty gold-trimmed watch box from the MALM bed display. They looked hungry!',
               textKey: 'm3.maya.1',
             },
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'A watch box near the MALM bed, and whoever took it was hungry? Worth inspecting that box.',
+              text: 'An empty Daytona case near the MALM bed, and whoever grabbed it was hungry? Worth checking that box.',
               textKey: 'm3.maya.2',
             },
           ],
@@ -245,7 +246,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'YOSSI (WAREHOUSE)',
               speakerKey: 'speaker.YOSSI (WAREHOUSE)',
-              text: 'Nobody carried a watch back here in the Warehouse. Check the MALM bedroom display in the Showroom!',
+              text: 'Nobody carried a gold Rolex back here in the Warehouse. Check the MALM bedroom display upstairs!',
               textKey: 'm3.yossi.1',
             },
             {
@@ -263,7 +264,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'DANNY (SHOWROOM)',
                     speakerKey: 'speaker.DANNY (SHOWROOM)',
-                    text: 'Yes! The watch was near the MALM bed display before it vanished. If Maya saw someone hungry hurrying off with a velvet box, check the MALM display for clues!',
+                    text: 'Yes! An 18k gold Rolex Daytona was near the MALM bed display before it vanished! If Maya saw someone hungry hurrying off with the case, inspect MALM immediately!',
                     textKey: 'm3.dannyAfterMaya.1',
                   },
                   {
@@ -277,13 +278,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'DANNY (SHOWROOM)',
                     speakerKey: 'speaker.DANNY (SHOWROOM)',
-                    text: 'Someone left an expensive watch near the MALM bed display earlier, then it vanished!',
+                    text: 'Management is freaking out—a solid 18k gold Rolex Daytona left near the MALM bed display just vanished!',
                     textKey: 'm3.danny.1',
                   },
                   {
                     speaker: 'KFIR',
                     speakerKey: 'speaker.KFIR',
-                    text: 'I will check the MALM bedroom display and ask around the floor.',
+                    text: 'A gold Rolex Daytona?! Checking the MALM bedroom display and questioning the floor now.',
                     textKey: 'm3.danny.2',
                   },
                 ],
@@ -293,13 +294,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'MAYA (LIVING ROOM)',
                     speakerKey: 'speaker.MAYA (LIVING ROOM)',
-                    text: 'Matches what Danny told you—I saw someone hurrying past the Living Room with an empty watch box near the MALM bed display. They looked hungry!',
+                    text: 'Matches what Danny told you—I saw someone hurrying past the Living Room with the empty watch box from the MALM bed display. They looked hungry!',
                     textKey: 'm3.maya.1',
                   },
                   {
                     speaker: 'KFIR',
                     speakerKey: 'speaker.KFIR',
-                    text: 'So Danny reported it missing near the MALM bed, and whoever took it looked hungry? Worth inspecting that box.',
+                    text: 'So Danny reported a gold Rolex missing near the MALM bed, and whoever took it looked hungry? Checking that box.',
                     textKey: 'm3.maya.2',
                   },
                 ]
@@ -307,13 +308,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'MAYA (LIVING ROOM)',
                     speakerKey: 'speaker.MAYA (LIVING ROOM)',
-                    text: 'I saw someone hurrying past the Living Room with an empty watch box from the MALM bed display. They looked hungry!',
+                    text: 'I saw someone hurrying past the Living Room with an empty luxury watch box from the MALM bed display. They looked hungry!',
                     textKey: 'm3.mayaBeforeDanny.1',
                   },
                   {
                     speaker: 'KFIR',
                     speakerKey: 'speaker.KFIR',
-                    text: 'An empty velvet watch box near the MALM bed, and whoever took it was hungry? Worth inspecting that display—and checking with Danny too.',
+                    text: 'An empty watch box near the MALM bed, and whoever took it was hungry? Worth inspecting that display—and checking with Danny too.',
                     textKey: 'm3.mayaBeforeDanny.2',
                   },
                 ],
@@ -335,7 +336,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'An empty velvet watch case... with a Swedish meatball napkin and receipt from the IKEA Restaurant counter! That is where it went!',
+              text: 'An empty green Rolex Daytona presentation case... with a Swedish meatball napkin and receipt from the IKEA Restaurant counter! That is where it went!',
               textKey: 'm3.boxDone.1',
             },
           ],
@@ -344,7 +345,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
       {
         id: 'm3-find-watch',
         type: 'collect',
-        title: 'Follow the Restaurant clue to find the missing watch',
+        title: 'Follow the Restaurant clue to find the gold Rolex Daytona',
         titleKey: 'm3.obj.watch',
         hideMarker: true,
         targetId: 'm3-missing-watch',
@@ -354,7 +355,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
       {
         id: 'm3-return-watch',
         type: 'talk_npc',
-        title: 'Return the watch to Danny in the Showroom',
+        title: 'Return the gold Rolex Daytona to Danny in Market Hall',
         titleKey: 'm3.obj.return',
         targetIds: ['employee-danny'],
         floor: WORLD_ANCHORS.showroom.danny.floor,
@@ -366,13 +367,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'You found it! Wait—it was just sitting by the Restaurant counter the whole time?',
+              text: 'You recovered the 18k gold Rolex Daytona! It was sitting beside the Restaurant meatball counter the whole time?!',
               textKey: 'm3.return.1',
             },
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'All this trouble... for a watch?',
+              text: 'All that panic... and the VIP left his gold Daytona by the lingonberry jam. Shift manager says we hold it in Security custody for now.',
               textKey: 'm3.return.2',
             },
           ],
@@ -381,11 +382,11 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
     ],
     reward: {
       money: 350,
-      itemId: 'silver-guard-watch',
-      itemName: 'Silver Guard Watch',
-      itemNameKey: 'item.silver-guard-watch',
+      itemId: 'watch-rolex-daytona',
+      itemName: 'Gold Rolex Daytona (Ref. 126508)',
+      itemNameKey: 'item.watch-rolex-daytona',
     },
-    completionMessage: 'Mystery solved! The watch has been safely returned.',
+    completionMessage: '18k Gold Rolex Daytona recovered! Slow-Motion ability [Q] unlocked!',
     completionMessageKey: 'm3.complete',
   },
   {
@@ -478,12 +479,12 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
     title: 'THE PERFUME HEIST',
     titleKey: 'm5.title',
     description:
-      'A limited-edition bottle of MIDNIGHT NOIR vanished from the Showroom luxury display. Track down the clues and recover it.',
+      'A bottle of Jean Paul Gaultier Le Male Le Parfum vanished from the Showroom luxury display. Track down the clues and recover it.',
     descriptionKey: 'm5.desc',
     openingPhoneMessage: {
       sender: 'SHIFT MANAGER',
       senderKey: 'speaker.SHIFT MANAGER',
-      text: 'Code Fragrance! Our limited-edition MIDNIGHT NOIR perfume disappeared from the Showroom display. Go inspect the stand!',
+      text: 'Code Fragrance! A Jean Paul Gaultier Le Male Le Parfum bottle disappeared from the Showroom display. Go inspect the stand!',
       textKey: 'm5.phone',
     },
     objectives: [
@@ -499,7 +500,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
       {
         id: 'm5-inspect-display',
         type: 'interact',
-        title: 'Inspect the empty Midnight Noir display stand',
+        title: 'Inspect the empty Le Male Le Parfum display stand',
         titleKey: 'm5.obj.inspect',
         targetId: 'm5-empty-display',
         targetPos: WORLD_ANCHORS.showroom.m5EmptyDisplay.position.clone(),
@@ -511,7 +512,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'Empty velvet slot, tipped price card, and strong cedarwood cologne hanging in the air...',
+              text: 'Empty velvet slot, tipped price card, and sweet cardamom-vanilla clouds hanging in the air...',
               textKey: 'm5.inspectDone.1',
             },
             {
@@ -539,7 +540,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'A guy in a bright yellow hoodie bolted past here five minutes ago! I swear he smelled like expensive cedarwood!',
+              text: 'A guy in a bright yellow hoodie bolted past here five minutes ago! I swear he smelled like sweet vanilla cologne!',
               textKey: 'm5.danny.1',
             },
             {
@@ -551,7 +552,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'Okay, maybe he was carrying a dark bottle, or maybe a thermos. Ask Maya!',
+              text: 'Okay, maybe he was carrying a black sailor bottle, or maybe a thermos. Ask Maya!',
               textKey: 'm5.danny.3',
             },
           ],
@@ -559,7 +560,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'MAYA (LIVING ROOM)',
               speakerKey: 'speaker.MAYA (LIVING ROOM)',
-              text: 'Danny is guessing again. The yellow hoodie guy was delivery support—the real trail of Midnight Noir cologne went South toward the Checkout Hall!',
+              text: 'Danny is guessing again. The yellow hoodie guy was delivery support—the real trail of Le Male Le Parfum went South toward the Checkout Hall!',
               textKey: 'm5.maya.1',
             },
             {
@@ -577,7 +578,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'DANNY (SHOWROOM)',
                     speakerKey: 'speaker.DANNY (SHOWROOM)',
-                    text: 'I thought I saw someone in a yellow hoodie bolt past here, though Maya is right—the cedarwood cologne trail clearly went South toward the Checkout Hall.',
+                    text: 'I thought I saw someone in a yellow hoodie bolt past here, though Maya is right—the JPG Le Male trail clearly went South toward the Checkout Hall.',
                     textKey: 'm5.dannyAfterMaya.1',
                   },
                   {
@@ -591,7 +592,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'DANNY (SHOWROOM)',
                     speakerKey: 'speaker.DANNY (SHOWROOM)',
-                    text: 'A guy in a bright yellow hoodie bolted past here five minutes ago! I swear he smelled like expensive cedarwood!',
+                    text: 'A guy in a bright yellow hoodie bolted past here five minutes ago! I swear he smelled like sweet vanilla cologne!',
                     textKey: 'm5.danny.1',
                   },
                   {
@@ -603,7 +604,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'DANNY (SHOWROOM)',
                     speakerKey: 'speaker.DANNY (SHOWROOM)',
-                    text: 'Okay, maybe he was carrying a dark bottle, or maybe a thermos. Ask Maya!',
+                    text: 'Okay, maybe he was carrying a black sailor bottle, or maybe a thermos. Ask Maya!',
                     textKey: 'm5.danny.3',
                   },
                 ],
@@ -613,7 +614,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'MAYA (LIVING ROOM)',
                     speakerKey: 'speaker.MAYA (LIVING ROOM)',
-                    text: 'Danny is guessing again. The yellow hoodie guy was delivery support—the real trail of Midnight Noir cologne went South toward the Checkout Hall!',
+                    text: 'Danny is guessing again. The yellow hoodie guy was delivery support—the real trail of Le Male Le Parfum went South toward the Checkout Hall!',
                     textKey: 'm5.maya.1',
                   },
                   {
@@ -627,7 +628,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
                   {
                     speaker: 'MAYA (LIVING ROOM)',
                     speakerKey: 'speaker.MAYA (LIVING ROOM)',
-                    text: 'If you are investigating the missing Midnight Noir cologne: the guy in the yellow hoodie was just delivery support—the real trail went South toward the Checkout Hall!',
+                    text: 'If you are investigating the missing Le Male Le Parfum: the guy in the yellow hoodie was just delivery support—the real trail went South toward the Checkout Hall!',
                     textKey: 'm5.mayaBeforeDanny.1',
                   },
                   {
@@ -655,13 +656,13 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'A blue IKEA bag soaked in Midnight Noir... and a break-shift sticky note tucked inside:',
+              text: 'A blue IKEA bag soaked in Le Male Le Parfum... and a break-shift sticky note tucked inside:',
               textKey: 'm5.bagDone.1',
             },
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: '"Stashed the Midnight Noir bottle behind East Checkout Lane 4 until break time." Busted!',
+              text: '"Stashed the JPG Le Male bottle behind East Checkout Lane 4 until break time." Busted!',
               textKey: 'm5.bagDone.2',
             },
           ],
@@ -670,12 +671,12 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
       {
         id: 'm5-recover-perfume',
         type: 'collect',
-        title: 'Recover Midnight Noir behind East Checkout Lane 4',
+        title: 'Recover JPG Le Male Le Parfum behind East Checkout Lane 4',
         titleKey: 'm5.obj.recover',
         hideMarker: true,
-        targetId: 'm5-midnight-noir-bottle',
-        targetPos: WORLD_ANCHORS.checkout.midnightNoir.position.clone(),
-        floor: WORLD_ANCHORS.checkout.midnightNoir.floor,
+        targetId: 'm5-jpg-le-male-bottle',
+        targetPos: WORLD_ANCHORS.checkout.jpgLeMale.position.clone(),
+        floor: WORLD_ANCHORS.checkout.jpgLeMale.floor,
         onCompleteEvent: 'm5_collect_perfume',
         completionDialogue: {
           speaker: 'Kfir',
@@ -684,7 +685,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'KFIR',
               speakerKey: 'speaker.KFIR',
-              text: 'Found it! Smells like smoky cedarwood and terrible getaway planning. Time to report back to Danny.',
+              text: 'Found it! Smells like black cardamom, vanilla, and terrible getaway planning. Time to report back to Danny.',
               textKey: 'm5.recoverDone.1',
             },
           ],
@@ -705,7 +706,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'You recovered Midnight Noir! Good thing—the Shift Manager told me the promo tester actually belongs to Security now.',
+              text: 'You recovered Le Male Le Parfum! Good thing—the Shift Manager told me the promo bottle actually belongs to Security now.',
               textKey: 'm5.report.1',
             },
             {
@@ -720,11 +721,11 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
     ],
     reward: {
       money: 600,
-      itemId: 'perfume-midnight-noir',
-      itemName: 'Midnight Noir',
-      itemNameKey: 'item.perfume-midnight-noir',
+      itemId: 'perfume-jpg-le-male',
+      itemName: 'JPG Le Male Le Parfum',
+      itemNameKey: 'item.perfume-jpg-le-male',
     },
-    completionMessage: 'Midnight Noir recovered and added to your Perfume Collection!',
+    completionMessage: 'Jean Paul Gaultier Le Male Le Parfum recovered and added to your Perfume Collection!',
     completionMessageKey: 'm5.complete',
   },
   {

@@ -102,7 +102,7 @@ describe('Phase 6.2 Shiran Milestone Messages & Incoming Call Separation', () =>
     manager.notifyNpcTalked('employee-maya');
     manager.notifyInteract('m5-clue-bag');
     dialogue.close();
-    manager.notifyInteract('m5-midnight-noir-bottle');
+    manager.notifyInteract('m5-jpg-le-male-bottle');
     dialogue.close();
     manager.notifyNpcTalked('employee-danny');
 

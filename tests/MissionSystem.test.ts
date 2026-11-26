@@ -78,9 +78,9 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
     // Out-of-order checks
     mm.notifyCameraInspected(0);
     mm.notifyInteract('m2-runaway-cart');
-    mm.notifyInteract('m5-midnight-noir-bottle');
+    mm.notifyInteract('m5-jpg-le-male-bottle');
     expect(mm.getActiveObjective()?.id).toBe('m1-check-cam04');
-    expect(collectibles.hasCollected('perfume-midnight-noir')).toBe(false);
+    expect(collectibles.hasCollected('perfume-jpg-le-male')).toBe(false);
 
     // --- MISSION 01 ---
     mm.notifyCameraInspected(3);
@@ -167,7 +167,7 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
 
     expect(mm.getStatus()).toBe('completed_screen');
     expect(mm.getSnapshot().money).toBe(750);
-    expect(collectibles.hasCollected('silver-guard-watch')).toBe(true);
+    expect(collectibles.hasCollected('watch-rolex-daytona')).toBe(true);
 
     // --- MISSION 04 (Dynamic forklift chase + maxPlayerZ guard) ---
     mm.continueAfterCompletion();
@@ -223,8 +223,8 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
     // Perfume bottle search hides marker until recovered
     expect(mm.getActiveObjective()?.id).toBe('m5-recover-perfume');
     expect(mm.getCurrentMarkerPosition()).toBeNull();
-    mm.notifyInteract('m5-midnight-noir-bottle');
-    expect(collectibles.hasCollected('perfume-midnight-noir')).toBe(true);
+    mm.notifyInteract('m5-jpg-le-male-bottle');
+    expect(collectibles.hasCollected('perfume-jpg-le-male')).toBe(true);
     while (dialogue.isActive()) dialogue.advance();
 
     expect(mm.getActiveObjective()?.id).toBe('m5-report-back');
@@ -233,10 +233,10 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
 
     expect(mm.getStatus()).toBe('completed_screen');
     expect(mm.getSnapshot().money).toBe(1850);
-    expect(collectibles.hasCollected('perfume-midnight-noir')).toBe(true);
+    expect(collectibles.hasCollected('perfume-jpg-le-male')).toBe(true);
 
     // Duplicate notify cannot grant extra money
-    mm.notifyInteract('m5-midnight-noir-bottle');
+    mm.notifyInteract('m5-jpg-le-male-bottle');
     expect(mm.getSnapshot().money).toBe(1850);
 
     mm.continueAfterCompletion();

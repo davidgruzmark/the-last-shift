@@ -1,11 +1,10 @@
 import * as THREE from 'three';
 
 export type PerfumeVariant =
-  | 'midnight-noir'
-  | 'ocean-king'
-  | 'royal-essence'
-  | 'the-boss'
-  | 'kfir-signature';
+  | 'jpg-le-male'
+  | 'armani-code'
+  | 'dior-sauvage'
+  | 'jimmy-choo-man';
 
 export interface PerfumeBottleRig {
   group: THREE.Group;
@@ -23,74 +22,61 @@ interface BottleStyle {
   titleLine1: string;
   titleLine2: string;
   subtitle: string;
-  silhouette: 'tall' | 'wide' | 'royal' | 'flask' | 'signature';
+  silhouette: 'torso' | 'tall-rounded' | 'cylinder-ribbed' | 'smoked-flask';
 }
 
 const BOTTLE_STYLES: Record<PerfumeVariant, BottleStyle> = {
-  'midnight-noir': {
-    glassColor: 0x0c162d,
-    emissiveColor: 0x0d1b38,
-    coreColor: 0x070b14,
-    accentHex: '#d4af37',
-    accentColor: 0xe6be53,
-    capColor: 0x111827,
-    sparkleColor: 0xffda1a,
-    titleLine1: 'MIDNIGHT',
-    titleLine2: 'NOIR',
-    subtitle: 'EAU DE PARFUM',
-    silhouette: 'tall',
-  },
-  'ocean-king': {
-    glassColor: 0x0891b2,
-    emissiveColor: 0x0e7490,
-    coreColor: 0x164e63,
-    accentHex: '#7dd3fc',
-    accentColor: 0xe2e8f0,
-    capColor: 0x0f172a,
-    sparkleColor: 0x38bdf8,
-    titleLine1: 'OCEAN',
-    titleLine2: 'KING',
-    subtitle: 'MARINE EXTRACT',
-    silhouette: 'wide',
-  },
-  'royal-essence': {
-    glassColor: 0x6b21a8,
-    emissiveColor: 0x581c87,
-    coreColor: 0x3b0764,
-    accentHex: '#f5d0fe',
+  'jpg-le-male': {
+    glassColor: 0x161922,
+    emissiveColor: 0x0b0e16,
+    coreColor: 0x090b10,
+    accentHex: '#e6be53',
     accentColor: 0xf4c430,
-    capColor: 0x4c1d95,
-    sparkleColor: 0xc084fc,
-    titleLine1: 'ROYAL',
-    titleLine2: 'ESSENCE',
-    subtitle: 'RESERVE BLEND',
-    silhouette: 'royal',
-  },
-  'the-boss': {
-    glassColor: 0x451a03,
-    emissiveColor: 0x78350f,
-    coreColor: 0x1c1917,
-    accentHex: '#fbbf24',
-    accentColor: 0xf59e0b,
-    capColor: 0x1f2937,
+    capColor: 0x1f2430,
     sparkleColor: 0xfbbf24,
-    titleLine1: 'THE',
-    titleLine2: 'BOSS',
-    subtitle: 'INTENSE ROAST',
-    silhouette: 'flask',
+    titleLine1: 'LE MALE',
+    titleLine2: 'LE PARFUM',
+    subtitle: 'JEAN PAUL GAULTIER',
+    silhouette: 'torso',
   },
-  'kfir-signature': {
-    glassColor: 0x065f46,
-    emissiveColor: 0x047857,
-    coreColor: 0x022c22,
-    accentHex: '#ffda1a',
-    accentColor: 0xffda1a,
-    capColor: 0x0058a3,
+  'armani-code': {
+    glassColor: 0x101319,
+    emissiveColor: 0x0b101b,
+    coreColor: 0x06080d,
+    accentHex: '#e2e8f0',
+    accentColor: 0xcbd5e1,
+    capColor: 0x181c24,
     sparkleColor: 0x34d399,
-    titleLine1: 'KFIR',
-    titleLine2: 'SIGNATURE',
-    subtitle: 'SECURITY EDITION',
-    silhouette: 'signature',
+    titleLine1: 'ARMANI',
+    titleLine2: 'CODE',
+    subtitle: 'GIORGIO ARMANI · PARFUM',
+    silhouette: 'tall-rounded',
+  },
+  'dior-sauvage': {
+    glassColor: 0x0c2448,
+    emissiveColor: 0x0a1c3a,
+    coreColor: 0x070d18,
+    accentHex: '#93c5fd',
+    accentColor: 0xdbeafe,
+    capColor: 0x0f172a,
+    sparkleColor: 0x60a5fa,
+    titleLine1: 'DIOR',
+    titleLine2: 'SAUVAGE',
+    subtitle: 'EAU DE PARFUM',
+    silhouette: 'cylinder-ribbed',
+  },
+  'jimmy-choo-man': {
+    glassColor: 0x64748b,
+    emissiveColor: 0x334155,
+    coreColor: 0x1e293b,
+    accentHex: '#e2e8f0',
+    accentColor: 0xcbd5e1,
+    capColor: 0x1e222b,
+    sparkleColor: 0x38bdf8,
+    titleLine1: 'JIMMY CHOO',
+    titleLine2: 'MAN',
+    subtitle: 'EAU DE TOILETTE',
+    silhouette: 'smoked-flask',
   },
 };
 
@@ -111,13 +97,13 @@ function createBottleLabelTexture(style: BottleStyle): THREE.CanvasTexture | nul
 
   ctx.fillStyle = style.accentHex;
   ctx.textAlign = 'center';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText(style.titleLine1, canvas.width / 2, 70);
+  ctx.font = 'bold 26px sans-serif';
+  ctx.fillText(style.titleLine1, canvas.width / 2, 68);
   ctx.font = 'bold 30px sans-serif';
-  ctx.fillText(style.titleLine2, canvas.width / 2, 110);
+  ctx.fillText(style.titleLine2, canvas.width / 2, 108);
 
   ctx.fillStyle = '#cbd5e1';
-  ctx.font = 'bold 13px sans-serif';
+  ctx.font = 'bold 12px sans-serif';
   ctx.fillText(style.subtitle, canvas.width / 2, 136);
 
   const texture = new THREE.CanvasTexture(canvas);
@@ -126,36 +112,40 @@ function createBottleLabelTexture(style: BottleStyle): THREE.CanvasTexture | nul
 }
 
 /**
- * Builds any of the 5 stylized low-poly 3D perfume bottles with unique silhouette,
- * palette, metallic trim, readable label, and orbital sparkle motes.
+ * Builds any of the 4 recognizable real-world stylized low-poly 3D perfume bottles:
+ * - Jean Paul Gaultier Le Male Le Parfum (matte black ribbed sailor torso + gold collar)
+ * - Armani Code Parfum (tall matte-black architectural flacon + silver accent cap)
+ * - Dior Sauvage EDP (heavy midnight-blue/charcoal glass cylinder + ribbed black magnetic cap)
+ * - Jimmy Choo Man EDT (smoked-grey rectangular glass flask + brushed silver trim)
  */
 export function createPerfumeBottle(variant: PerfumeVariant): PerfumeBottleRig {
   const style = BOTTLE_STYLES[variant];
   const group = new THREE.Group();
   group.name = `PerfumeBottle_${variant}`;
 
+  const isOpaqueTorso = style.silhouette === 'torso';
   const glassMat = new THREE.MeshStandardMaterial({
     color: style.glassColor,
-    roughness: 0.16,
-    metalness: 0.28,
+    roughness: isOpaqueTorso ? 0.55 : 0.16,
+    metalness: isOpaqueTorso ? 0.15 : 0.28,
     emissive: style.emissiveColor,
-    emissiveIntensity: 0.28,
-    transparent: true,
-    opacity: 0.92,
+    emissiveIntensity: 0.25,
+    transparent: !isOpaqueTorso,
+    opacity: isOpaqueTorso ? 1.0 : style.silhouette === 'smoked-flask' ? 0.78 : 0.92,
     flatShading: true,
   });
 
   const darkCoreMat = new THREE.MeshStandardMaterial({
     color: style.coreColor,
-    roughness: 0.3,
+    roughness: 0.32,
     metalness: 0.42,
     flatShading: true,
   });
 
   const trimMat = new THREE.MeshStandardMaterial({
     color: style.accentColor,
-    roughness: 0.24,
-    metalness: 0.85,
+    roughness: 0.22,
+    metalness: 0.88,
     emissive: style.accentColor,
     emissiveIntensity: 0.18,
     flatShading: true,
@@ -163,57 +153,96 @@ export function createPerfumeBottle(variant: PerfumeVariant): PerfumeBottleRig {
 
   const capMat = new THREE.MeshStandardMaterial({
     color: style.capColor,
-    roughness: 0.25,
+    roughness: 0.26,
     metalness: 0.55,
     flatShading: true,
   });
 
-  const bodyW = style.silhouette === 'wide' ? 0.36 : style.silhouette === 'flask' ? 0.33 : 0.3;
-  const bodyH = style.silhouette === 'tall' || style.silhouette === 'signature' ? 0.36 : 0.31;
-  const bodyD = style.silhouette === 'royal' ? 0.24 : 0.18;
+  if (style.silhouette === 'torso') {
+    // JPG Le Male Le Parfum: iconic ribbed sailor torso + gold collar & mariniere stripes
+    const baseFoot = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.125, 0.05, 8), darkCoreMat);
+    baseFoot.position.y = 0.025;
+    const hips = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.12, 0.12, 8), glassMat);
+    hips.position.y = 0.11;
+    const chest = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.108, 0.2, 8), glassMat);
+    chest.scale.set(1.08, 1.0, 0.78);
+    chest.position.y = 0.265;
 
-  const baseTrim = new THREE.Mesh(
-    new THREE.BoxGeometry(bodyW + 0.02, 0.05, bodyD + 0.02),
-    trimMat,
-  );
-  baseTrim.position.y = 0.025;
+    // Gold horizontal sailor stripes
+    [0.14, 0.21, 0.28, 0.34].forEach((sy, idx) => {
+      const r = idx === 0 ? 0.116 : idx === 1 ? 0.122 : 0.142;
+      const stripe = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.98, 0.016, 8), trimMat);
+      stripe.scale.set(1.06, 1.0, 0.79);
+      stripe.position.y = sy;
+      group.add(stripe);
+    });
 
-  const core = new THREE.Mesh(
-    new THREE.BoxGeometry(bodyW - 0.06, bodyH - 0.06, bodyD - 0.06),
-    darkCoreMat,
-  );
-  core.position.y = 0.05 + (bodyH - 0.06) / 2;
+    const goldCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.088, 0.05, 8), trimMat);
+    goldCollar.position.y = 0.39;
+    const nozzleNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.046, 0.065, 8), trimMat);
+    nozzleNeck.position.y = 0.445;
+    const nozzleHead = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.036, 0.045, 8), capMat);
+    nozzleHead.position.y = 0.495;
 
-  const bodyGeo =
-    style.silhouette === 'royal'
-      ? new THREE.CylinderGeometry(bodyW * 0.5, bodyW * 0.46, bodyH, 8)
-      : new THREE.BoxGeometry(bodyW, bodyH, bodyD);
-  const body = new THREE.Mesh(bodyGeo, glassMat);
-  body.position.y = 0.05 + bodyH / 2;
+    group.add(baseFoot, hips, chest, goldCollar, nozzleNeck, nozzleHead);
+  } else if (style.silhouette === 'cylinder-ribbed') {
+    // Dior Sauvage EDP: heavy dark-blue cylinder + metallic neck + vertically ribbed black cap
+    const baseGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.138, 0.065, 14), darkCoreMat);
+    baseGlass.position.y = 0.032;
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.145, 0.29, 14), glassMat);
+    body.position.y = 0.21;
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(0.112, 0.112, 0.24, 12), darkCoreMat);
+    core.position.y = 0.21;
+    const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.072, 0.142, 0.055, 14), glassMat);
+    shoulder.position.y = 0.382;
+    const silverNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.062, 0.04, 12), trimMat);
+    silverNeck.position.y = 0.425;
+    const magneticCap = new THREE.Mesh(new THREE.CylinderGeometry(0.084, 0.084, 0.125, 12), capMat);
+    magneticCap.position.y = 0.505;
+    // Vertical cap ribs
+    for (let r = 0; r < 8; r++) {
+      const a = (r / 8) * Math.PI * 2;
+      const rib = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.115, 0.014), darkCoreMat);
+      rib.position.set(Math.cos(a) * 0.084, 0.505, Math.sin(a) * 0.084);
+      group.add(rib);
+    }
+    group.add(baseGlass, body, core, shoulder, silverNeck, magneticCap);
+  } else if (style.silhouette === 'smoked-flask') {
+    // Jimmy Choo Man EDT: crisp rectangular smoked-grey glass flask + silver collar + textured black cap
+    const baseTrim = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.045, 0.16), darkCoreMat);
+    baseTrim.position.y = 0.022;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.31, 0.33, 0.15), glassMat);
+    body.position.y = 0.21;
+    const innerTint = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.25, 0.1), darkCoreMat);
+    innerTint.position.y = 0.21;
+    const silverBand = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.04, 0.155), trimMat);
+    silverBand.position.y = 0.38;
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.052, 0.045, 8), trimMat);
+    neck.position.y = 0.42;
+    const rectCap = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.11, 0.115), capMat);
+    rectCap.position.y = 0.495;
+    group.add(baseTrim, body, innerTint, silverBand, neck, rectCap);
+  } else {
+    // Armani Code Parfum: tall rounded-square matte-black architectural flacon + silver cap/band
+    const baseTrim = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.045, 0.17), trimMat);
+    baseTrim.position.y = 0.022;
+    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.135, 0.13, 0.37, 8), glassMat);
+    body.scale.set(1.0, 1.0, 0.68);
+    body.position.y = 0.23;
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.1, 0.31, 8), darkCoreMat);
+    core.scale.set(1.0, 1.0, 0.68);
+    core.position.y = 0.23;
+    const shoulder = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.13, 0.05, 8), glassMat);
+    shoulder.scale.set(1.0, 1.0, 0.68);
+    shoulder.position.y = 0.435;
+    const silverCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.03, 10), trimMat);
+    silverCollar.position.y = 0.475;
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.074, 0.11, 10), capMat);
+    cap.position.y = 0.545;
+    group.add(baseTrim, body, core, shoulder, silverCollar, cap);
+  }
 
-  const shoulderY = 0.05 + bodyH + 0.03;
-  const shoulder = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.075, bodyW * 0.44, 0.07, 6),
-    glassMat,
-  );
-  shoulder.position.y = shoulderY;
-
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.06, 0.065, 8), trimMat);
-  neck.position.y = shoulderY + 0.06;
-
-  const capSegments = style.silhouette === 'signature' ? 8 : 6;
-  const cap = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.085, 0.072, 0.125, capSegments),
-    capMat,
-  );
-  cap.position.y = shoulderY + 0.145;
-
-  const capRing = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.088, 0.088, 0.022, capSegments),
-    trimMat,
-  );
-  capRing.position.y = shoulderY + 0.095;
-
+  // Brand plate texture mounted cleanly on front/back
   const labelTex = createBottleLabelTexture(style);
   const labelMat = new THREE.MeshStandardMaterial({
     color: labelTex ? 0xffffff : style.accentColor,
@@ -221,13 +250,19 @@ export function createPerfumeBottle(variant: PerfumeVariant): PerfumeBottleRig {
     roughness: 0.35,
     metalness: 0.2,
   });
-  const labelZ = style.silhouette === 'royal' ? bodyW * 0.48 : bodyD / 2 + 0.006;
-  const frontLabel = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.15, 0.01), labelMat);
-  frontLabel.position.set(0, 0.05 + bodyH * 0.52, labelZ);
-  const backLabel = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.15, 0.01), labelMat);
-  backLabel.position.set(0, 0.05 + bodyH * 0.52, -labelZ);
-
-  group.add(baseTrim, core, body, shoulder, neck, cap, capRing, frontLabel, backLabel);
+  const labelZ =
+    style.silhouette === 'cylinder-ribbed'
+      ? 0.148
+      : style.silhouette === 'torso'
+        ? 0.116
+        : style.silhouette === 'smoked-flask'
+          ? 0.078
+          : 0.095;
+  const frontLabel = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.13, 0.01), labelMat);
+  frontLabel.position.set(0, 0.21, labelZ);
+  const backLabel = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.13, 0.01), labelMat);
+  backLabel.position.set(0, 0.21, -labelZ);
+  group.add(frontLabel, backLabel);
 
   const sparkles: THREE.Object3D[] = [];
   const sparkleMat = new THREE.MeshBasicMaterial({
@@ -258,9 +293,9 @@ export function createPerfumeBottle(variant: PerfumeVariant): PerfumeBottleRig {
   return { group, sparkles };
 }
 
-/** Preserved helper returning the Midnight Noir flacon for Mission 05. */
-export function createMidnightNoirBottle(): PerfumeBottleRig {
-  const rig = createPerfumeBottle('midnight-noir');
-  rig.group.name = 'MidnightNoirBottle';
+/** Builds the Mission 05 Jean Paul Gaultier Le Male Le Parfum flacon. */
+export function createJpgLeMaleBottle(): PerfumeBottleRig {
+  const rig = createPerfumeBottle('jpg-le-male');
+  rig.group.name = 'JpgLeMaleBottle';
   return rig;
 }

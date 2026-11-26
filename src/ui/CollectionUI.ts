@@ -12,28 +12,41 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
-const PERFUME_SVG_PALETTES: Record<string, { glass: string; cap: string; mono: string }> = {
-  'perfume-midnight-noir': { glass: '#0d1b38', cap: '#d4af37', mono: 'MN' },
-  'perfume-ocean-king': { glass: '#0c4a6e', cap: '#38bdf8', mono: 'OK' },
-  'perfume-royal-essence': { glass: '#4c1d95', cap: '#e9d5ff', mono: 'RE' },
-  'perfume-the-boss': { glass: '#451a03', cap: '#f59e0b', mono: 'TB' },
-  'perfume-kfir-signature': { glass: '#064e3b', cap: '#ffda1a', mono: 'KS' },
+const PERFUME_SVG_PALETTES: Record<string, { glass: string; cap: string; mono: string; style: string }> = {
+  'perfume-jpg-le-male': { glass: '#161922', cap: '#f4c430', mono: 'JPG', style: 'torso' },
+  'perfume-armani-code': { glass: '#101319', cap: '#cbd5e1', mono: 'AC', style: 'tall' },
+  'perfume-dior-sauvage': { glass: '#0c2448', cap: '#0f172a', mono: 'DS', style: 'cyl' },
+  'perfume-jimmy-choo-man': { glass: '#475569', cap: '#1e222b', mono: 'JC', style: 'flask' },
 };
 
 function renderBottleSvg(entry: PerfumeEntry): string {
-  const pal = PERFUME_SVG_PALETTES[entry.id] ?? { glass: '#0d1b38', cap: '#d4af37', mono: 'PF' };
+  const pal = PERFUME_SVG_PALETTES[entry.id] ?? { glass: '#0d1b38', cap: '#d4af37', mono: 'PF', style: 'flask' };
   const glassFill = entry.collected ? pal.glass : '#1e293b';
   const stroke = entry.collected ? entry.accentColor : 'rgba(148,163,184,0.35)';
   const capFill = entry.collected ? pal.cap : '#334155';
   const label = entry.collected ? pal.mono : '?';
 
+  if (pal.style === 'torso') {
+    return `
+      <svg class="perfume-card-svg" width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
+        <rect x="24" y="5" width="8" height="9" rx="1.5" fill="${capFill}" />
+        <rect x="21" y="14" width="14" height="5" rx="1.5" fill="${capFill}" />
+        <path d="M13 21 L43 21 L40 42 L37 64 L19 64 L16 42 Z" fill="${glassFill}" stroke="${stroke}" stroke-width="2" />
+        <line x1="17" y1="30" x2="39" y2="30" stroke="${capFill}" stroke-width="1.6" />
+        <line x1="18" y1="37" x2="38" y2="37" stroke="${capFill}" stroke-width="1.6" />
+        <line x1="19" y1="44" x2="37" y2="44" stroke="${capFill}" stroke-width="1.6" />
+        <text x="28" y="57" text-anchor="middle" fill="${stroke}" font-size="8.5" font-weight="800" font-family="sans-serif">${label}</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="perfume-card-svg" width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
-      <rect x="21" y="4" width="14" height="10" rx="2" fill="${capFill}" />
-      <rect x="23" y="14" width="10" height="6" rx="1" fill="${capFill}" opacity="0.85" />
-      <path d="M16 24 L40 24 L44 32 L44 64 L12 64 L12 32 Z" fill="${glassFill}" stroke="${stroke}" stroke-width="2" />
+      <rect x="20" y="5" width="16" height="11" rx="2" fill="${capFill}" />
+      <rect x="22" y="16" width="12" height="5" rx="1" fill="${stroke}" opacity="0.85" />
+      <path d="M15 24 L41 24 L43 31 L43 64 L13 64 L13 31 Z" fill="${glassFill}" stroke="${stroke}" stroke-width="2" />
       <rect x="17" y="37" width="22" height="15" rx="2" fill="#090d16" stroke="${stroke}" stroke-width="1" />
-      <text x="28" y="48" text-anchor="middle" fill="${stroke}" font-size="9" font-weight="800" font-family="sans-serif">${label}</text>
+      <text x="28" y="48" text-anchor="middle" fill="${stroke}" font-size="8.5" font-weight="800" font-family="sans-serif">${label}</text>
     </svg>
   `;
 }
@@ -49,29 +62,29 @@ function renderWatchSvg(entry: WatchEntry): string {
     : `<text x="28" y="39.5" text-anchor="middle" fill="${stroke}" font-size="10" font-weight="800" font-family="sans-serif">?</text>`;
 
   if (entry.rarity === 'Legendary') {
-    // Octagonal Gold Skeleton Chronometer + two-tone bracelet + dual pushers + tourbillon wheel
-    const strap = locked ? '#334155' : '#475569';
-    const goldMid = locked ? '#475569' : '#ffda1a';
+    // 18k Gold Rolex Daytona Ref. 126508: round gold Oyster case, 3 sub-dials, dual pushers, 3-link gold bracelet
+    const strap = locked ? '#334155' : '#ca8a04';
+    const goldMid = locked ? '#475569' : '#fef08a';
     return `
       <svg class="perfume-card-svg" width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
         <rect x="20" y="3" width="16" height="16" rx="2" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
-        <rect x="25" y="3" width="6" height="16" fill="${goldMid}" opacity="0.85" />
+        <rect x="25" y="3" width="6" height="16" fill="${goldMid}" opacity="0.88" />
         <rect x="20" y="53" width="16" height="16" rx="2" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
-        <rect x="25" y="53" width="6" height="16" fill="${goldMid}" opacity="0.85" />
+        <rect x="25" y="53" width="6" height="16" fill="${goldMid}" opacity="0.88" />
         <rect x="44" y="33.5" width="4" height="5" rx="1" fill="${stroke}" />
         <rect x="43" y="25" width="3" height="4" rx="1" fill="${stroke}" />
         <rect x="43" y="43" width="3" height="4" rx="1" fill="${stroke}" />
-        <polygon points="20,18 36,18 45,27 45,45 36,54 20,54 11,45 11,27" fill="#1e293b" stroke="${stroke}" stroke-width="2.4" />
+        <circle cx="28" cy="36" r="17.5" fill="${locked ? '#1e293b' : '#b45309'}" stroke="${stroke}" stroke-width="2.6" />
         <circle cx="28" cy="36" r="13.5" fill="${dialFill}" stroke="${stroke}" stroke-width="1.2" />
-        ${!locked ? `<circle cx="28" cy="43" r="4" fill="none" stroke="#ffda1a" stroke-width="1.4" stroke-dasharray="2 1.5" />` : ''}
+        ${!locked ? `<circle cx="22.5" cy="36" r="2.7" fill="#d4af37" opacity="0.85" /><circle cx="33.5" cy="36" r="2.7" fill="#d4af37" opacity="0.85" /><circle cx="28" cy="42.5" r="2.7" fill="#d4af37" opacity="0.85" />` : ''}
         ${hands}
       </svg>
     `;
   }
 
   if (entry.rarity === 'Epic') {
-    // Cushion Sport Chronograph + 3 sub-dials + dual pushers + ribbed strap
-    const strap = locked ? '#1e293b' : '#312e81';
+    // TAG Heuer Carrera Chronograph: steel lugs, dark racing tachymeter bezel, 3 sub-dials, dual pushers
+    const strap = locked ? '#1e293b' : '#1e222b';
     return `
       <svg class="perfume-card-svg" width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
         <rect x="19" y="4" width="18" height="15" rx="2" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
@@ -79,21 +92,22 @@ function renderWatchSvg(entry: WatchEntry): string {
         <rect x="44" y="34" width="4" height="4" rx="1" fill="${stroke}" />
         <rect x="43" y="26" width="3" height="3.5" rx="1" fill="${stroke}" />
         <rect x="43" y="42.5" width="3" height="3.5" rx="1" fill="${stroke}" />
-        <rect x="11" y="18" width="34" height="36" rx="8" fill="#1e1b4b" stroke="${stroke}" stroke-width="2.4" />
-        <circle cx="28" cy="36" r="13.5" fill="${dialFill}" stroke="${stroke}" stroke-width="1.2" />
-        ${!locked ? `<circle cx="22.5" cy="32.5" r="2.6" fill="#312e81" stroke="${stroke}" stroke-width="0.9" /><circle cx="33.5" cy="32.5" r="2.6" fill="#312e81" stroke="${stroke}" stroke-width="0.9" /><circle cx="28" cy="43" r="2.6" fill="#312e81" stroke="${stroke}" stroke-width="0.9" />` : ''}
+        <circle cx="28" cy="36" r="17" fill="#111827" stroke="${stroke}" stroke-width="2.4" />
+        <circle cx="28" cy="36" r="13.2" fill="${dialFill}" stroke="${stroke}" stroke-width="1.2" />
+        ${!locked ? `<circle cx="22.5" cy="36" r="2.5" fill="#1e293b" stroke="${stroke}" stroke-width="0.9" /><circle cx="33.5" cy="36" r="2.5" fill="#1e293b" stroke="${stroke}" stroke-width="0.9" /><circle cx="28" cy="42.5" r="2.5" fill="#1e293b" stroke="${stroke}" stroke-width="0.9" />` : ''}
         ${hands}
       </svg>
     `;
   }
 
   if (entry.rarity === 'Rare') {
-    // Silver Guard Diver + notched navy bezel + crown guards + 3-link steel bracelet
+    // Omega Seamaster Diver 300M: brushed steel case, navy bezel, 10-o'clock helium valve, 3-link steel bracelet
     const strap = locked ? '#334155' : '#64748b';
     return `
       <svg class="perfume-card-svg" width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
         <rect x="20" y="4" width="16" height="15" rx="1" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
         <rect x="20" y="53" width="16" height="15" rx="1" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
+        <circle cx="13" cy="24" r="2.4" fill="#94a3b8" stroke="${stroke}" stroke-width="0.9" />
         <path d="M43 29 L47 32 L47 40 L43 43 Z" fill="#94a3b8" stroke="${stroke}" stroke-width="1" />
         <circle cx="28" cy="36" r="17.5" fill="${locked ? '#1e293b' : '#1e3a8a'}" stroke="${stroke}" stroke-width="2.6" stroke-dasharray="5 2" />
         <circle cx="28" cy="36" r="13" fill="${dialFill}" stroke="${stroke}" stroke-width="1" />
@@ -103,15 +117,15 @@ function renderWatchSvg(entry: WatchEntry): string {
     `;
   }
 
-  // Common — Classic Field Watch + stitched dark leather strap + off-white dial
-  const leather = locked ? '#334155' : '#4b2e1e';
+  // Common — Casio G-Shock DW-5600E: matte-black octagonal shock bezel & rectangular LCD window
+  const strap = locked ? '#334155' : '#181b22';
   return `
     <svg class="perfume-card-svg" width="56" height="72" viewBox="0 0 56 72" aria-hidden="true">
-      <rect x="21" y="4" width="14" height="16" rx="2" fill="${leather}" stroke="${stroke}" stroke-width="1.2" />
-      <rect x="21" y="52" width="14" height="16" rx="2" fill="${leather}" stroke="${stroke}" stroke-width="1.2" />
-      <rect x="44" y="34" width="3.5" height="4" rx="1" fill="${stroke}" />
-      <circle cx="28" cy="36" r="16.5" fill="${locked ? '#1e293b' : '#f4f1ea'}" stroke="${stroke}" stroke-width="2.4" />
-      ${!locked ? `<line x1="28" y1="22" x2="28" y2="25" stroke="#334155" stroke-width="1.6" /><line x1="28" y1="47" x2="28" y2="50" stroke="#334155" stroke-width="1.6" /><line x1="28" y1="36" x2="28" y2="26" stroke="#1e293b" stroke-width="2" stroke-linecap="round" /><line x1="28" y1="36" x2="34" y2="38" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round" />` : `<text x="28" y="39.5" text-anchor="middle" fill="${stroke}" font-size="10" font-weight="800" font-family="sans-serif">?</text>`}
+      <rect x="20" y="4" width="16" height="15" rx="2" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
+      <rect x="20" y="53" width="16" height="15" rx="2" fill="${strap}" stroke="${stroke}" stroke-width="1.2" />
+      <polygon points="20,18 36,18 45,27 45,45 36,54 20,54 11,45 11,27" fill="${locked ? '#1e293b' : '#1f242d'}" stroke="${stroke}" stroke-width="2.2" />
+      <rect x="17" y="29" width="22" height="14" rx="2" fill="${locked ? '#111827' : '#88b09b'}" stroke="${stroke}" stroke-width="1" />
+      ${!locked ? `<text x="28" y="39" text-anchor="middle" fill="#0f172a" font-size="8" font-weight="800" font-family="monospace">08:05</text>` : `<text x="28" y="39.5" text-anchor="middle" fill="${stroke}" font-size="10" font-weight="800" font-family="sans-serif">?</text>`}
     </svg>
   `;
 }

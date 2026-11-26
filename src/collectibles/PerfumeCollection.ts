@@ -28,64 +28,53 @@ export interface PerfumeEntry extends PerfumeDefinition {
 
 export const PERFUME_CATALOG: readonly PerfumeDefinition[] = [
   {
-    id: 'perfume-midnight-noir',
-    modelId: 'midnight-noir',
-    nameKey: 'item.perfume-midnight-noir',
-    descriptionKey: 'perfume.midnight-noir.desc',
-    sourceKey: 'perfume.midnight-noir.source',
-    flavorKey: 'perfume.midnight-noir.flavor',
+    id: 'perfume-jpg-le-male',
+    modelId: 'jpg-le-male',
+    nameKey: 'item.perfume-jpg-le-male',
+    descriptionKey: 'perfume.jpg-le-male.desc',
+    sourceKey: 'perfume.jpg-le-male.source',
+    flavorKey: 'perfume.jpg-le-male.flavor',
     rarity: 'Signature Rare',
     obtainableInBuild: true,
-    accentColor: '#d4af37',
+    accentColor: '#e6be53',
   },
   {
-    id: 'perfume-ocean-king',
-    modelId: 'ocean-king',
-    nameKey: 'item.perfume-ocean-king',
-    descriptionKey: 'perfume.ocean-king.desc',
-    sourceKey: 'perfume.ocean-king.source',
-    flavorKey: 'perfume.ocean-king.flavor',
-    rarity: 'Rare',
-    obtainableInBuild: true,
-    accentColor: '#38bdf8',
-  },
-  {
-    id: 'perfume-royal-essence',
-    modelId: 'royal-essence',
-    nameKey: 'item.perfume-royal-essence',
-    descriptionKey: 'perfume.royal-essence.desc',
-    sourceKey: 'perfume.royal-essence.source',
-    flavorKey: 'perfume.royal-essence.flavor',
-    rarity: 'Epic',
-    obtainableInBuild: true,
-    accentColor: '#a855f7',
-  },
-  {
-    id: 'perfume-the-boss',
-    modelId: 'the-boss',
-    nameKey: 'item.perfume-the-boss',
-    descriptionKey: 'perfume.the-boss.desc',
-    sourceKey: 'perfume.the-boss.source',
-    flavorKey: 'perfume.the-boss.flavor',
-    rarity: 'Epic',
-    obtainableInBuild: true,
-    accentColor: '#f59e0b',
-  },
-  {
-    id: 'perfume-kfir-signature',
-    modelId: 'kfir-signature',
-    nameKey: 'item.perfume-kfir-signature',
-    descriptionKey: 'perfume.kfir-signature.desc',
-    sourceKey: 'perfume.kfir-signature.source',
-    flavorKey: 'perfume.kfir-signature.flavor',
+    id: 'perfume-armani-code',
+    modelId: 'armani-code',
+    nameKey: 'item.perfume-armani-code',
+    descriptionKey: 'perfume.armani-code.desc',
+    sourceKey: 'perfume.armani-code.source',
+    flavorKey: 'perfume.armani-code.flavor',
     rarity: 'Legendary',
     obtainableInBuild: true,
-    accentColor: '#2ecc71',
+    accentColor: '#34d399',
+  },
+  {
+    id: 'perfume-dior-sauvage',
+    modelId: 'dior-sauvage',
+    nameKey: 'item.perfume-dior-sauvage',
+    descriptionKey: 'perfume.dior-sauvage.desc',
+    sourceKey: 'perfume.dior-sauvage.source',
+    flavorKey: 'perfume.dior-sauvage.flavor',
+    rarity: 'Epic',
+    obtainableInBuild: true,
+    accentColor: '#60a5fa',
+  },
+  {
+    id: 'perfume-jimmy-choo-man',
+    modelId: 'jimmy-choo-man',
+    nameKey: 'item.perfume-jimmy-choo-man',
+    descriptionKey: 'perfume.jimmy-choo-man.desc',
+    sourceKey: 'perfume.jimmy-choo-man.source',
+    flavorKey: 'perfume.jimmy-choo-man.flavor',
+    rarity: 'Rare',
+    obtainableInBuild: true,
+    accentColor: '#94a3b8',
   },
 ] as const;
 
 /**
- * Reusable perfume collection built directly on top of CollectibleManager
+ * Real-world 4-bottle Perfume Collection built on CollectibleManager
  * (single source of truth for collected state, duplicate protection, and localization).
  */
 export class PerfumeCollection {
@@ -119,18 +108,17 @@ export class PerfumeCollection {
     const def = PERFUME_CATALOG.find((p) => p.id === id);
     if (!def || !def.obtainableInBuild) return false;
     if (this.collectibles.hasCollected(def.id)) return false;
-
     this.collectibles.grantRewardItem(def.id, i18n.t(def.nameKey));
-    const progress = this.getProgress();
-    this.eventBus?.emit('collection:changed', progress);
+    this.eventBus?.emit('collection:changed', {
+      category: 'perfumes',
+      ...this.getProgress(),
+    });
     return true;
   }
 
   getProgress(): { collected: number; total: number } {
-    const entries = this.getEntries();
-    return {
-      collected: entries.filter((e) => e.collected).length,
-      total: entries.length,
-    };
+    const obtainable = PERFUME_CATALOG.filter((p) => p.obtainableInBuild);
+    const collected = obtainable.filter((p) => this.collectibles.hasCollected(p.id)).length;
+    return { collected, total: obtainable.length };
   }
 }

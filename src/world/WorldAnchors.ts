@@ -80,14 +80,13 @@ export const WORLD_ANCHORS = {
     malmWatchBox: anchor('showroom.malmWatchBox', 14.6, 5.8, 18.2, 2, 'Showroom'),
     m5Reach: anchor('showroom.m5Reach', 16.2, 5.8, 2.5, 2, 'Showroom'),
     m5EmptyDisplay: anchor('showroom.m5EmptyDisplay', 15.2, 5.8, 1.2, 2, 'Showroom'),
-    royalEssence: anchor('showroom.royalEssence', 9.2, 0, 12.2, 1, 'Market Hall'),
-    kitchenEpicWatch: anchor('showroom.kitchenEpicWatch', 38.2, 5.8, 10.6, 2, 'Showroom'),
+    tagCarrera: anchor('showroom.tagCarrera', 38.2, 5.8, 10.6, 2, 'Showroom'),
     flashlight: anchor('showroom.flashlight', 14.2, 0, -6.0, 1, 'Market Hall'),
   },
   restaurant: {
     missingWatch: anchor('restaurant.missingWatch', 35.8, 5.8, -10.8, 2, 'Restaurant'),
-    classicWatch: anchor('restaurant.classicWatch', 35.6, 5.8, -6.2, 2, 'Restaurant'),
-    oceanKing: anchor('restaurant.oceanKing', 42.8, 5.8, -3.2, 2, 'Restaurant'),
+    gshockWatch: anchor('restaurant.gshockWatch', 35.6, 5.8, -6.2, 2, 'Restaurant'),
+    diorSauvage: anchor('restaurant.diorSauvage', 42.8, 5.8, -3.2, 2, 'Restaurant'),
   },
   warehouse: {
     entrance: anchor('warehouse.entrance', 21.0, 0, -16.5, 1, 'Warehouse'),
@@ -97,18 +96,18 @@ export const WORLD_ANCHORS = {
     m4Reach: anchor('warehouse.m4Reach', 21.0, 0, -17.5, 1, 'Warehouse'),
     m4EmergencySwitch: anchor('warehouse.m4EmergencySwitch', 21.0, 0, -37.2, 1, 'Warehouse'),
     ballPickup: anchor('warehouse.ballPickup', 21.0, 0, -16.8, 1, 'Warehouse'),
-    theBoss: anchor('warehouse.theBoss', 35.2, 0, -34.8, 1, 'Warehouse'),
+    jimmyChooMan: anchor('warehouse.jimmyChooMan', 35.2, 0, -34.8, 1, 'Warehouse'),
     radioBattery: anchor('warehouse.radioBattery', 24.5, 0, -22.5, 1, 'Warehouse'),
   },
   checkout: {
     bagClue: anchor('checkout.bagClue', 19.5, 0, 16.5, 1, 'Checkout'),
-    midnightNoir: anchor('checkout.midnightNoir', 29.8, 0, 21.8, 1, 'Checkout'),
+    jpgLeMale: anchor('checkout.jpgLeMale', 29.8, 0, 21.8, 1, 'Checkout'),
     mainEntrance: anchor('checkout.mainEntrance', 21.0, 0, 23.82, 1, 'Checkout'),
   },
   parking: {
     kfirCar: anchor('parking.kfirCar', 14.0, 0, 33.5, 1, 'Parking Lot', 0),
     miniPitchCenter: anchor('parking.miniPitchCenter', 34.0, 0, 48.0, 1, 'Parking Lot'),
-    legendaryWatch: anchor('parking.legendaryWatch', 43.2, 0, 30.5, 1, 'Parking Lot'),
+    omegaSeamaster: anchor('parking.omegaSeamaster', 43.2, 0, 30.5, 1, 'Parking Lot'),
   },
 } as const;
 

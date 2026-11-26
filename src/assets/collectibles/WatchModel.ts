@@ -20,47 +20,47 @@ const RARITY_PALETTES: Record<
     accentGlow: number;
   }
 > = {
-  // Brushed steel case, cream dial, stitched dark leather strap
+  // Common — Casio G-Shock DW-5600E (Matte black octagonal shock resin + dark LCD dial + red trim)
   Common: {
-    caseColor: 0x9aa5b4,
-    bezelColor: 0xb8c2cf,
-    dialColor: 0xf4f1ea,
-    handColor: 0x1e293b,
-    strapColor: 0x4b2e1e,
-    strapSecondary: 0x2c1a10,
-    markerColor: 0x334155,
+    caseColor: 0x1f242d,
+    bezelColor: 0x14171d,
+    dialColor: 0x263238,
+    handColor: 0x94e2d5,
+    strapColor: 0x181b22,
+    strapSecondary: 0xef4444,
+    markerColor: 0xe2e8f0,
     accentGlow: 0x38bdf8,
   },
-  // Silver diver case with crown guards, notched navy bezel, 3-link steel bracelet
+  // Rare — Omega Seamaster Diver 300M (Brushed steel, notched navy ceramic bezel, wave-blue dial, steel bracelet)
   Rare: {
     caseColor: 0xcbd5e1,
     bezelColor: 0x1e3a8a,
-    dialColor: 0x0b1630,
-    handColor: 0x60a5fa,
+    dialColor: 0x0b1f44,
+    handColor: 0xe0f2fe,
     strapColor: 0x94a3b8,
     strapSecondary: 0x64748b,
-    markerColor: 0xe0f2fe,
+    markerColor: 0xf8fafc,
     accentGlow: 0x60a5fa,
   },
-  // Cushion sport case, dark tachymeter bezel, 3 sub-dials, dual pushers, ribbed rubber strap
+  // Epic — TAG Heuer Carrera Chronograph (Polished steel lugs, black tachymeter bezel, 3 sub-dials, racing strap)
   Epic: {
-    caseColor: 0x3f3a5c,
-    bezelColor: 0x1f1638,
-    dialColor: 0x141029,
-    handColor: 0xe879f9,
-    strapColor: 0x26213d,
-    strapSecondary: 0x7c3aed,
-    markerColor: 0xc084fc,
+    caseColor: 0xdbe2ea,
+    bezelColor: 0x111827,
+    dialColor: 0x151822,
+    handColor: 0xf43f5e,
+    strapColor: 0x1e222b,
+    strapSecondary: 0xdc2626,
+    markerColor: 0xf8fafc,
     accentGlow: 0xc084fc,
   },
-  // Octagonal 18k gold case, fluted bezel, skeleton obsidian dial with gold gear, two-tone jubilee bracelet
+  // Legendary — 18k Yellow Gold Rolex Cosmograph Daytona Ref. 126508 (Gold Oyster case, gold tachymeter bezel, 3 sub-dials, gold Oyster bracelet)
   Legendary: {
-    caseColor: 0xf0c239,
-    bezelColor: 0xffda1a,
-    dialColor: 0x090d16,
-    handColor: 0xffda1a,
-    strapColor: 0x475569,
-    strapSecondary: 0xeab308,
+    caseColor: 0xf5c542,
+    bezelColor: 0xffda2a,
+    dialColor: 0x12100d,
+    handColor: 0xffea75,
+    strapColor: 0xd4a017,
+    strapSecondary: 0xfde047,
     markerColor: 0xfef08a,
     accentGlow: 0xfbbf24,
   },
@@ -107,7 +107,6 @@ function addWatchStrapLoop(
     const angle = startAngle + (i / (segmentCount - 1)) * (endAngle - startAngle);
     const py = Math.sin(angle) * loopRadiusY;
     const pz = loopCenterZ + Math.cos(angle) * loopRadiusZ;
-    // Exact ellipse tangent orientation so local Y runs smoothly along the strap arc
     const rotX = Math.atan2(-loopRadiusZ * Math.sin(angle), loopRadiusY * Math.cos(angle));
 
     const linkGroup = new THREE.Group();
@@ -118,50 +117,35 @@ function addWatchStrapLoop(
 
     const isMetalBracelet = rarity === 'Rare' || rarity === 'Legendary';
     if (isMetalBracelet) {
-      const outer = new THREE.Mesh(
-        new THREE.BoxGeometry(0.168, segLen, 0.032),
-        strapMat,
-      );
+      // 3-link Oyster / Seamaster steel or 18k gold bracelet
+      const outer = new THREE.Mesh(new THREE.BoxGeometry(0.168, segLen, 0.032), strapMat);
       const centerLink = new THREE.Mesh(
-        new THREE.BoxGeometry(0.074, segLen * 1.04, 0.038),
+        new THREE.BoxGeometry(0.076, segLen * 1.04, 0.038),
         secondaryMat,
       );
-      const pin = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.008, 0.008, 0.172, 6),
-        pinMat,
-      );
+      const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.172, 6), pinMat);
       pin.rotation.z = Math.PI / 2;
       pin.position.y = segLen * 0.42;
       linkGroup.add(outer, centerLink, pin);
     } else if (rarity === 'Epic') {
-      const bandCore = new THREE.Mesh(
-        new THREE.BoxGeometry(0.166, segLen, 0.026),
-        strapMat,
-      );
-      const rib = new THREE.Mesh(
-        new THREE.BoxGeometry(0.174, segLen * 0.55, 0.034),
+      // Perforated dark racing strap for TAG Heuer Carrera
+      const bandCore = new THREE.Mesh(new THREE.BoxGeometry(0.162, segLen, 0.026), strapMat);
+      const perf = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, segLen * 0.35, 0.031),
         i % 2 === 0 ? strapMat : secondaryMat,
       );
-      linkGroup.add(bandCore, rib);
+      linkGroup.add(bandCore, perf);
     } else {
-      const leatherSeg = new THREE.Mesh(
-        new THREE.BoxGeometry(0.158, segLen, 0.026),
-        strapMat,
-      );
-      const stitchL = new THREE.Mesh(
-        new THREE.BoxGeometry(0.012, segLen * 0.7, 0.029),
-        secondaryMat,
-      );
-      stitchL.position.x = -0.056;
-      const stitchR = stitchL.clone();
-      stitchR.position.x = 0.056;
-      linkGroup.add(leatherSeg, stitchL, stitchR);
+      // Ribbed matte resin shock strap for Casio G-Shock
+      const resinSeg = new THREE.Mesh(new THREE.BoxGeometry(0.164, segLen, 0.028), strapMat);
+      const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.17, segLen * 0.45, 0.034), strapMat);
+      linkGroup.add(resinSeg, ridge);
     }
 
     strapGroup.add(linkGroup);
   }
 
-  // Lug end-links bridging the top/bottom strap ends cleanly into the case lugs
+  // Lug end-links bridging strap ends cleanly into the case lugs
   [-1, 1].forEach((signY) => {
     const endPiece = new THREE.Mesh(
       new THREE.BoxGeometry(0.156, 0.068, 0.044),
@@ -172,7 +156,7 @@ function addWatchStrapLoop(
     strapGroup.add(endPiece);
   });
 
-  // Case lugs connecting the strap cleanly to top & bottom of the watch case
+  // Case lugs connecting the strap cleanly to top & bottom of watch case
   [-0.068, 0.068].forEach((lx) => {
     [-0.145, 0.145].forEach((ly) => {
       const lug = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.055, 0.052), buckleMat);
@@ -191,8 +175,11 @@ function addWatchStrapLoop(
 }
 
 /**
- * Creates a detailed, distinct low-poly 3D wristwatch per rarity tier featuring
- * proper cases, lugs, bezels, dials, hands, glass crystals, crowns, and articulated straps.
+ * Creates 4 detailed, recognizable real-world low-poly 3D wristwatches:
+ * - Common: Casio G-Shock DW-5600E
+ * - Rare: Omega Seamaster Diver 300M (10-o'clock helium valve, navy dive bezel, 3-link steel)
+ * - Epic: TAG Heuer Carrera Chronograph (racing bezel, 3 sub-dials, dual pushers)
+ * - Legendary: 18k Yellow Gold Rolex Cosmograph Daytona Ref. 126508 (3 sub-dials, tachymeter bezel, gold Oyster bracelet)
  */
 export function createWatchModel(rarity: WatchVisualRarity): WatchModelRig {
   const p = RARITY_PALETTES[rarity];
@@ -202,23 +189,23 @@ export function createWatchModel(rarity: WatchVisualRarity): WatchModelRig {
   const watchRoot = new THREE.Group();
   watchRoot.name = 'WatchAssembly';
   watchRoot.position.y = 0.27;
-  // Tilt slightly toward player camera for clear iconic wristwatch silhouette while bobbing
   watchRoot.rotation.x = -0.22;
   group.add(watchRoot);
 
+  const isGoldDaytona = rarity === 'Legendary';
   const caseMat = createMaterial(
     p.caseColor,
-    0.26,
-    0.85,
-    rarity === 'Legendary' ? 0x6b4700 : 0x000000,
-    rarity === 'Legendary' ? 0.22 : 0,
+    isGoldDaytona ? 0.2 : rarity === 'Common' ? 0.72 : 0.28,
+    rarity === 'Common' ? 0.15 : 0.88,
+    isGoldDaytona ? 0x6b4700 : 0x000000,
+    isGoldDaytona ? 0.2 : 0,
   );
   const bezelMat = createMaterial(
     p.bezelColor,
-    0.22,
-    0.88,
-    rarity === 'Legendary' ? 0x7c5300 : 0x000000,
-    rarity === 'Legendary' ? 0.3 : 0,
+    isGoldDaytona ? 0.18 : 0.25,
+    rarity === 'Common' ? 0.18 : 0.86,
+    isGoldDaytona ? 0x855a00 : 0x000000,
+    isGoldDaytona ? 0.28 : 0,
   );
   const dialMat = createMaterial(p.dialColor, 0.35, 0.25);
   const markerMat = createMaterial(p.markerColor, 0.25, 0.75);
@@ -227,10 +214,18 @@ export function createWatchModel(rarity: WatchVisualRarity): WatchModelRig {
     0.22,
     0.45,
     rarity === 'Common' ? 0x000000 : p.accentGlow,
-    rarity === 'Common' ? 0 : 0.65,
+    rarity === 'Common' ? 0 : 0.55,
   );
-  const strapMat = createMaterial(p.strapColor, rarity === 'Common' ? 0.82 : 0.42, rarity === 'Common' ? 0.08 : 0.65);
-  const strapSecMat = createMaterial(p.strapSecondary, 0.35, 0.72);
+  const strapMat = createMaterial(
+    p.strapColor,
+    rarity === 'Common' || rarity === 'Epic' ? 0.78 : 0.34,
+    rarity === 'Common' || rarity === 'Epic' ? 0.12 : 0.78,
+  );
+  const strapSecMat = createMaterial(
+    p.strapSecondary,
+    rarity === 'Legendary' ? 0.18 : 0.35,
+    rarity === 'Legendary' ? 0.92 : 0.72,
+  );
   const glassMat = new THREE.MeshStandardMaterial({
     color: 0xdbeafe,
     transparent: true,
@@ -240,115 +235,145 @@ export function createWatchModel(rarity: WatchVisualRarity): WatchModelRig {
     depthWrite: false,
   });
 
-  // 1. Strap / Bracelet Loop & Lugs
+  // 1. Continuous Connected Strap / Bracelet Loop & Lugs
   addWatchStrapLoop(watchRoot, rarity, strapMat, strapSecMat, caseMat);
 
-  // 2. Case & Bezel (distinct geometry per rarity!)
+  // 2. Distinct Case & Bezel Architecture
   const faceZ = 0.14;
-  if (rarity === 'Epic') {
-    // Tonneau / cushion racing chronograph case
-    const cushion = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.3, 0.068), caseMat);
-    cushion.name = 'WatchCase';
-    cushion.position.set(0, 0, faceZ);
-    const tachBezel = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.145, 0.028, 12), bezelMat);
+  if (rarity === 'Legendary') {
+    // 18k Gold Rolex Daytona Ref. 126508: round Oyster case + engraved gold tachymeter bezel + gold crown guards
+    const oysterCase = new THREE.Mesh(new THREE.CylinderGeometry(0.156, 0.156, 0.072, 16), caseMat);
+    oysterCase.name = 'WatchCase';
+    oysterCase.rotation.x = Math.PI / 2;
+    oysterCase.position.set(0, 0, faceZ);
+
+    const tachBezel = new THREE.Mesh(new THREE.CylinderGeometry(0.152, 0.158, 0.03, 16), bezelMat);
+    tachBezel.rotation.x = Math.PI / 2;
+    tachBezel.position.set(0, 0, faceZ + 0.038);
+
+    const gTop = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.028, 0.045), caseMat);
+    gTop.position.set(0.158, 0.026, faceZ);
+    const gBot = gTop.clone();
+    gBot.position.y = -0.026;
+
+    watchRoot.add(oysterCase, tachBezel, gTop, gBot);
+  } else if (rarity === 'Epic') {
+    // TAG Heuer Carrera Chronograph: steel case + black tachymeter racing bezel
+    const carreraCase = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.07, 14), caseMat);
+    carreraCase.name = 'WatchCase';
+    carreraCase.rotation.x = Math.PI / 2;
+    carreraCase.position.set(0, 0, faceZ);
+
+    const tachBezel = new THREE.Mesh(new THREE.CylinderGeometry(0.144, 0.15, 0.028, 14), bezelMat);
     tachBezel.rotation.x = Math.PI / 2;
     tachBezel.position.set(0, 0, faceZ + 0.036);
-    watchRoot.add(cushion, tachBezel);
-  } else if (rarity === 'Legendary') {
-    // Octagonal luxury gold case with fluted inner bezel ring
-    const octCase = new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.165, 0.072, 8), caseMat);
-    octCase.name = 'WatchCase';
-    octCase.rotation.x = Math.PI / 2;
-    octCase.rotation.y = Math.PI / 8;
-    octCase.position.set(0, 0, faceZ);
-    const flutedBezel = new THREE.Mesh(new THREE.CylinderGeometry(0.152, 0.158, 0.03, 16), bezelMat);
-    flutedBezel.rotation.x = Math.PI / 2;
-    flutedBezel.position.set(0, 0, faceZ + 0.038);
-    watchRoot.add(octCase, flutedBezel);
+    watchRoot.add(carreraCase, tachBezel);
   } else if (rarity === 'Rare') {
-    // Rugged Silver Guard diver case + notched rotating bezel + crown guards
-    const diverCase = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.072, 12), caseMat);
+    // Omega Seamaster Diver 300M: brushed steel diver case + notched navy bezel + 10-o'clock helium valve + crown guards
+    const diverCase = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.072, 14), caseMat);
     diverCase.name = 'WatchCase';
     diverCase.rotation.x = Math.PI / 2;
     diverCase.position.set(0, 0, faceZ);
+
     const diverBezel = new THREE.Mesh(new THREE.CylinderGeometry(0.148, 0.152, 0.03, 12), bezelMat);
     diverBezel.rotation.x = Math.PI / 2;
     diverBezel.position.set(0, 0, faceZ + 0.038);
+
     const pip = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.028, 0.018), markerMat);
     pip.position.set(0, 0.132, faceZ + 0.052);
+
     const guardTop = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.032, 0.048), caseMat);
     guardTop.position.set(0.158, 0.038, faceZ);
     const guardBot = guardTop.clone();
     guardBot.position.y = -0.038;
-    watchRoot.add(diverCase, diverBezel, pip, guardTop, guardBot);
+
+    // 10-o'clock Helium Escape Valve
+    const heValve = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.03, 8), caseMat);
+    heValve.rotation.z = Math.PI / 3;
+    heValve.position.set(-0.142, 0.084, faceZ);
+
+    watchRoot.add(diverCase, diverBezel, pip, guardTop, guardBot, heValve);
   } else {
-    // Classic stepped round field watch case
-    const fieldCase = new THREE.Mesh(new THREE.CylinderGeometry(0.142, 0.142, 0.06, 16), caseMat);
-    fieldCase.name = 'WatchCase';
-    fieldCase.rotation.x = Math.PI / 2;
-    fieldCase.position.set(0, 0, faceZ);
-    const bezel = new THREE.Mesh(new THREE.CylinderGeometry(0.138, 0.142, 0.022, 16), bezelMat);
+    // Casio G-Shock DW-5600E: matte black octagonal shock case
+    const gshockCase = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.076, 8), caseMat);
+    gshockCase.name = 'WatchCase';
+    gshockCase.rotation.x = Math.PI / 2;
+    gshockCase.rotation.y = Math.PI / 8;
+    gshockCase.position.set(0, 0, faceZ);
+
+    const bezel = new THREE.Mesh(new THREE.CylinderGeometry(0.145, 0.15, 0.026, 8), bezelMat);
     bezel.rotation.x = Math.PI / 2;
-    bezel.position.set(0, 0, faceZ + 0.032);
-    watchRoot.add(fieldCase, bezel);
+    bezel.rotation.y = Math.PI / 8;
+    bezel.position.set(0, 0, faceZ + 0.038);
+
+    const redStripe = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.016, 0.012), strapSecMat);
+    redStripe.position.set(0, 0.105, faceZ + 0.052);
+    watchRoot.add(gshockCase, bezel, redStripe);
   }
 
-  // 3. Dial + Cardinal Indices + Rarity Complications (Sub-dials / Tourbillon)
-  const dialRadius = rarity === 'Common' ? 0.116 : 0.122;
+  // 3. Dial + Cardinal Indices + Chronograph Sub-dials
+  const dialRadius = rarity === 'Common' ? 0.112 : 0.122;
   const dial = new THREE.Mesh(new THREE.CylinderGeometry(dialRadius, dialRadius, 0.016, 16), dialMat);
   dial.name = 'WatchDial';
   dial.rotation.x = Math.PI / 2;
   dial.position.set(0, 0, faceZ + 0.046);
   watchRoot.add(dial);
 
-  // Cardinal hour markers (12, 3, 6, 9)
-  [
-    [0, 0.095, 0.018, 0.032],
-    [0, -0.095, 0.018, 0.026],
-    [0.095, 0, 0.026, 0.016],
-    [-0.095, 0, 0.026, 0.016],
-  ].forEach(([mx, my, mw, mh]) => {
-    const marker = new THREE.Mesh(new THREE.BoxGeometry(mw, mh, 0.008), markerMat);
-    marker.position.set(mx, my, faceZ + 0.056);
-    watchRoot.add(marker);
-  });
-
-  if (rarity === 'Epic') {
-    // 3 Chronograph sub-dials
-    const subMat = createMaterial(0x2e1f5e, 0.3, 0.5);
+  if (rarity === 'Common') {
+    // Rectangular LCD digital window on G-Shock
+    const lcd = new THREE.Mesh(
+      new THREE.BoxGeometry(0.135, 0.085, 0.01),
+      createMaterial(0x88b09b, 0.5, 0.05),
+    );
+    lcd.position.set(0, 0, faceZ + 0.056);
+    watchRoot.add(lcd);
+  } else {
+    // Cardinal baton hour markers (12, 3, 6, 9)
     [
-      [-0.046, 0.028],
-      [0.046, 0.028],
-      [0, -0.048],
+      [0, 0.095, 0.018, 0.032],
+      [0, -0.095, 0.018, 0.026],
+      [0.095, 0, 0.026, 0.016],
+      [-0.095, 0, 0.026, 0.016],
+    ].forEach(([mx, my, mw, mh]) => {
+      const marker = new THREE.Mesh(new THREE.BoxGeometry(mw, mh, 0.008), markerMat);
+      marker.position.set(mx, my, faceZ + 0.056);
+      watchRoot.add(marker);
+    });
+  }
+
+  if (rarity === 'Epic' || rarity === 'Legendary') {
+    // 3 Chronograph sub-dials (classic 3, 6, 9 Daytona / Carrera layout)
+    const subMat = isGoldDaytona
+      ? createMaterial(0xe6be53, 0.25, 0.72)
+      : createMaterial(0x283044, 0.3, 0.5);
+    [
+      [-0.048, 0.006],
+      [0.048, 0.006],
+      [0, -0.052],
     ].forEach(([sx, sy]) => {
-      const subDial = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.008, 10), subMat);
+      const subDial = new THREE.Mesh(new THREE.CylinderGeometry(0.029, 0.029, 0.009, 12), subMat);
+      subDial.name = isGoldDaytona ? 'DaytonaSubdial' : 'ChronoSubdial';
       subDial.rotation.x = Math.PI / 2;
       subDial.position.set(sx, sy, faceZ + 0.056);
       watchRoot.add(subDial);
     });
-  } else if (rarity === 'Legendary') {
-    // Visible open-heart gold tourbillon gear on the obsidian dial
-    const tourbRing = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.008, 6, 12), bezelMat);
-    tourbRing.name = 'TourbillonWheel';
-    tourbRing.position.set(0, -0.036, faceZ + 0.057);
-    const tourbBridge = new THREE.Mesh(new THREE.BoxGeometry(0.082, 0.012, 0.01), caseMat);
-    tourbBridge.position.set(0, -0.036, faceZ + 0.059);
-    watchRoot.add(tourbRing, tourbBridge);
   }
 
-  // 4. Hour & Minute Hands + Center Pinion
-  const hourHand = new THREE.Mesh(new THREE.BoxGeometry(0.058, 0.016, 0.008), handMat);
-  hourHand.position.set(-0.024, 0.012, faceZ + 0.062);
-  hourHand.rotation.z = -0.35;
-  const minuteHand = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.088, 0.008), handMat);
-  minuteHand.position.set(0.022, 0.034, faceZ + 0.064);
-  minuteHand.rotation.z = -0.52;
-  const pinion = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.012, 8), markerMat);
-  pinion.rotation.x = Math.PI / 2;
-  pinion.position.set(0, 0, faceZ + 0.066);
-  watchRoot.add(hourHand, minuteHand, pinion);
+  // 4. Hour & Minute Hands + Center Pinion (skipped on digital LCD G-Shock? keep subtle indicator bars)
+  if (rarity !== 'Common') {
+    const hourHand = new THREE.Mesh(new THREE.BoxGeometry(0.058, 0.016, 0.008), handMat);
+    hourHand.position.set(-0.024, 0.012, faceZ + 0.062);
+    hourHand.rotation.z = -0.35;
+    const minuteHand = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.088, 0.008), handMat);
+    minuteHand.position.set(0.022, 0.034, faceZ + 0.064);
+    minuteHand.rotation.z = -0.52;
+    const pinion = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.012, 8), markerMat);
+    pinion.rotation.x = Math.PI / 2;
+    pinion.position.set(0, 0, faceZ + 0.066);
+    watchRoot.add(hourHand, minuteHand, pinion);
+  }
 
-  // 5. Right-Side Winding Crown (+ Dual Pushers for Epic & Legendary)
+  // 5. Right-Side Winding Crown / Mode Button (+ Screw-Down Chronograph Pushers for Daytona & Carrera)
   const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.038, 8), bezelMat);
   crown.name = 'WatchCrown';
   crown.rotation.z = Math.PI / 2;
@@ -357,16 +382,16 @@ export function createWatchModel(rarity: WatchVisualRarity): WatchModelRig {
 
   if (rarity === 'Epic' || rarity === 'Legendary') {
     [-0.062, 0.062].forEach((py) => {
-      const pusher = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.032, 8), caseMat);
+      const pusher = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.034, 8), caseMat);
       pusher.rotation.z = Math.PI / 2;
-      pusher.position.set(0.162, py, faceZ);
+      pusher.position.set(0.164, py, faceZ);
       watchRoot.add(pusher);
     });
   }
 
   // 6. Protective Translucent Crystal Glass
   const crystal = new THREE.Mesh(
-    new THREE.CylinderGeometry(dialRadius + 0.008, dialRadius + 0.008, 0.012, 16),
+    new THREE.CylinderGeometry(dialRadius + 0.01, dialRadius + 0.01, 0.012, 16),
     glassMat,
   );
   crystal.name = 'WatchCrystal';

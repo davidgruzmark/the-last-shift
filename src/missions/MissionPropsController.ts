@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {
-  createMidnightNoirBottle,
+  createJpgLeMaleBottle,
   type PerfumeBottleRig,
 } from '../assets/collectibles/PerfumeBottleModel';
 import { createWatchModel } from '../assets/collectibles/WatchModel';
@@ -413,16 +413,16 @@ export class MissionPropsController {
       },
     });
 
-    const watchVisual = createWatchModel('Rare').group;
+    const watchVisual = createWatchModel('Legendary').group;
     watchVisual.position.y = 0.28;
-    watchVisual.scale.setScalar(1.2);
+    watchVisual.scale.setScalar(1.25);
 
     this.missingWatchProp = new SimpleMissionProp({
       id: 'm3-missing-watch',
       type: 'collect',
       position: WORLD_ANCHORS.restaurant.missingWatch.position,
       floor: WORLD_ANCHORS.restaurant.missingWatch.floor,
-      promptText: 'PRESS E TO COLLECT MISSING WATCH',
+      promptText: 'PRESS E TO COLLECT GOLD ROLEX DAYTONA',
       mesh: watchVisual,
       isEligible: () => {
         const objId = this.missions.getActiveObjective()?.id;
@@ -519,7 +519,7 @@ export class MissionPropsController {
       },
     });
 
-    // --- M05: The Perfume Heist (Empty Display, Clue Bag, Midnight Noir Bottle) ---
+    // --- M05: The Perfume Heist (Empty Display, Clue Bag, JPG Le Male Le Parfum) ---
     const displayVisual = new THREE.Group();
     const pedBase = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.0, 0.9), palette.darkNavy);
     pedBase.position.y = 0.5;
@@ -575,17 +575,17 @@ export class MissionPropsController {
     const bottleStage = new THREE.Group();
     const stashCrate = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.46, 0.65), palette.wood);
     stashCrate.position.y = 0.23;
-    this.m5BottleRig = createMidnightNoirBottle();
+    this.m5BottleRig = createJpgLeMaleBottle();
     this.m5BottleRig.group.position.y = 0.52;
     this.m5BottleRig.group.scale.setScalar(1.25);
     bottleStage.add(stashCrate, this.m5BottleRig.group);
 
     this.m5PerfumeBottleProp = new SimpleMissionProp({
-      id: 'm5-midnight-noir-bottle',
+      id: 'm5-jpg-le-male-bottle',
       type: 'collect',
-      position: WORLD_ANCHORS.checkout.midnightNoir.position,
-      floor: WORLD_ANCHORS.checkout.midnightNoir.floor,
-      promptText: 'PRESS E TO COLLECT MIDNIGHT NOIR',
+      position: WORLD_ANCHORS.checkout.jpgLeMale.position,
+      floor: WORLD_ANCHORS.checkout.jpgLeMale.floor,
+      promptText: 'PRESS E TO COLLECT JPG LE MALE LE PARFUM',
       radius: 2.9,
       mesh: bottleStage,
       isEligible: () =>
@@ -595,7 +595,7 @@ export class MissionPropsController {
         if (this.m5BottleCollected) return;
         this.m5BottleCollected = true;
         this.m5PickupAnim = 0;
-        this.missions.notifyInteract('m5-midnight-noir-bottle');
+        this.missions.notifyInteract('m5-jpg-le-male-bottle');
       },
     });
 

@@ -26,7 +26,7 @@ import { MissionManager } from '../missions/MissionManager';
 import { MissionPropsController } from '../missions/MissionPropsController';
 import { ObjectiveMarker } from '../missions/ObjectiveMarker';
 import { ControlRoomStaffingSystem } from '../npcs/ControlRoomStaffingSystem';
-import { FootballMiniGame } from '../minigames/FootballMiniGame';
+import { FootballMiniGame, FOOTBALL_PITCH_BOUNDS } from '../minigames/FootballMiniGame';
 import { PlayerAnimation } from '../player/PlayerAnimation';
 import { PlayerController } from '../player/PlayerController';
 import { CollectionUI } from '../ui/CollectionUI';
@@ -188,6 +188,7 @@ export class GameEngine {
       this.perfumeCollection,
       this.watchCollection,
       this.eventBus,
+      { dialogue: this.dialogue },
     );
     this.scene.add(this.collectionProps.group);
 
@@ -229,7 +230,11 @@ export class GameEngine {
     );
     this.footballMiniGame.setOnKickoff(() => {
       if (!this.vehicleManager.isInVehicle()) {
-        this.playerController.position.set(23.5, 0, 46.6);
+        this.playerController.position.set(
+          FOOTBALL_PITCH_BOUNDS.centerX,
+          0,
+          FOOTBALL_PITCH_BOUNDS.centerZ + 2.6,
+        );
         this.playerController.velocity.set(0, 0, 0);
         this.playerController.facingYaw = Math.PI;
       }

@@ -21,30 +21,27 @@ describe('Phase 6.2 Watch Collection (4/4) & Legendary Watch Slow-Motion', () =>
     expect(watches.hasLegendaryWatch()).toBe(false);
 
     // Non-watch reward must not affect watch count
-    cm.grantRewardItem('perfume-midnight-noir', 'Midnight Noir');
+    cm.grantRewardItem('perfume-jpg-le-male', 'Jean Paul Gaultier Le Male Le Parfum');
     expect(watches.getProgress()).toEqual({ collected: 0, total: 4 });
 
-    // M03 Silver Guard Watch granted via reward path integrates cleanly
-    cm.grantRewardItem('silver-guard-watch', 'Silver Guard Watch');
-    expect(watches.hasWatch('silver-guard-watch')).toBe(true);
-    expect(watches.unlockWatch('silver-guard-watch')).toBe(false);
+    // M03 Gold Rolex Daytona granted via reward path integrates cleanly & unlocks Slow-Motion
+    cm.grantRewardItem('watch-rolex-daytona', 'Rolex Cosmograph Daytona (Gold Ref. 126508)');
+    expect(watches.hasWatch('watch-rolex-daytona')).toBe(true);
+    expect(watches.unlockWatch('watch-rolex-daytona')).toBe(false);
     expect(watches.getProgress()).toEqual({ collected: 1, total: 4 });
-    expect(watches.hasLegendaryWatch()).toBe(false);
-
-    // Classic, Epic, Legendary watches unlock cleanly
-    expect(watches.unlockWatch('watch-classic')).toBe(true);
-    expect(watches.unlockWatch('watch-chronograph-pro')).toBe(true);
-    expect(watches.hasLegendaryWatch()).toBe(false);
-
-    expect(watches.unlockWatch('watch-chrono-legend')).toBe(true);
-    expect(watches.unlockWatch('watch-chrono-legend')).toBe(false);
     expect(watches.hasLegendaryWatch()).toBe(true);
+
+    // Common, Rare, Epic watches unlock cleanly without duplicates
+    expect(watches.unlockWatch('watch-gshock')).toBe(true);
+    expect(watches.unlockWatch('watch-omega-seamaster')).toBe(true);
+    expect(watches.unlockWatch('watch-tag-carrera')).toBe(true);
+    expect(watches.unlockWatch('watch-tag-carrera')).toBe(false);
     expect(watches.getProgress()).toEqual({ collected: 4, total: 4 });
 
     // Localized Hebrew watch labels
     i18n.setLanguage('he');
     const heEntries = watches.getEntries();
-    expect(heEntries[0].name).toBe('שעון יד קלאסי');
+    expect(heEntries[0].name).toBe('Casio G-Shock DW-5600E');
     expect(heEntries[3].rarityLabel).toBe('אגדי');
   });
 
@@ -68,9 +65,9 @@ describe('Phase 6.2 Watch Collection (4/4) & Legendary Watch Slow-Motion', () =>
         expect(rig.sparkles).toHaveLength(0);
       }
     }
-    // Verify Legendary Watch contains visible Tourbillon wheel complication & physically connected strap links
+    // Verify Gold Rolex Daytona contains 3 Daytona chronograph subdials & physically connected strap links
     const legRig = createWatchModel('Legendary');
-    expect(legRig.group.getObjectByName('TourbillonWheel')).toBeDefined();
+    expect(legRig.group.getObjectByName('DaytonaSubdial')).toBeDefined();
     expect(new Set(childCounts).size).toBeGreaterThanOrEqual(3);
 
     for (const rarity of rarities) {

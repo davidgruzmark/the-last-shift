@@ -27,41 +27,41 @@ export interface WatchEntry extends WatchDefinition {
 
 export const WATCH_CATALOG: readonly WatchDefinition[] = [
   {
-    id: 'watch-classic',
-    nameKey: 'item.watch-classic',
-    descriptionKey: 'watch.classic.desc',
-    sourceKey: 'watch.classic.source',
-    flavorKey: 'watch.classic.flavor',
+    id: 'watch-gshock',
+    nameKey: 'item.watch-gshock',
+    descriptionKey: 'watch.gshock.desc',
+    sourceKey: 'watch.gshock.source',
+    flavorKey: 'watch.gshock.flavor',
     rarity: 'Common',
     obtainableInBuild: true,
     accentColor: '#94a3b8',
   },
   {
-    id: 'silver-guard-watch',
-    nameKey: 'item.silver-guard-watch',
-    descriptionKey: 'watch.silver-guard.desc',
-    sourceKey: 'watch.silver-guard.source',
-    flavorKey: 'watch.silver-guard.flavor',
+    id: 'watch-omega-seamaster',
+    nameKey: 'item.watch-omega-seamaster',
+    descriptionKey: 'watch.omega-seamaster.desc',
+    sourceKey: 'watch.omega-seamaster.source',
+    flavorKey: 'watch.omega-seamaster.flavor',
     rarity: 'Rare',
     obtainableInBuild: true,
     accentColor: '#60a5fa',
   },
   {
-    id: 'watch-chronograph-pro',
-    nameKey: 'item.watch-chronograph-pro',
-    descriptionKey: 'watch.chrono-pro.desc',
-    sourceKey: 'watch.chrono-pro.source',
-    flavorKey: 'watch.chrono-pro.flavor',
+    id: 'watch-tag-carrera',
+    nameKey: 'item.watch-tag-carrera',
+    descriptionKey: 'watch.tag-carrera.desc',
+    sourceKey: 'watch.tag-carrera.source',
+    flavorKey: 'watch.tag-carrera.flavor',
     rarity: 'Epic',
     obtainableInBuild: true,
     accentColor: '#c084fc',
   },
   {
-    id: 'watch-chrono-legend',
-    nameKey: 'item.watch-chrono-legend',
-    descriptionKey: 'watch.chrono-legend.desc',
-    sourceKey: 'watch.chrono-legend.source',
-    flavorKey: 'watch.chrono-legend.flavor',
+    id: 'watch-rolex-daytona',
+    nameKey: 'item.watch-rolex-daytona',
+    descriptionKey: 'watch.rolex-daytona.desc',
+    sourceKey: 'watch.rolex-daytona.source',
+    flavorKey: 'watch.rolex-daytona.flavor',
     rarity: 'Legendary',
     obtainableInBuild: true,
     accentColor: '#ffda1a',
@@ -70,8 +70,8 @@ export const WATCH_CATALOG: readonly WatchDefinition[] = [
 ] as const;
 
 /**
- * Reusable Watch Collection wrapping CollectibleManager so ambient watches,
- * mission watches (M03 Silver Guard Watch), and Legendary Slow-Mo stay unified.
+ * Real-world 4-watch Collection wrapping CollectibleManager so Casio G-Shock,
+ * Omega Seamaster Diver 300M, TAG Heuer Carrera, and M03 Gold Rolex Daytona (Slow-Mo) stay unified.
  */
 export class WatchCollection {
   private readonly collectibles: CollectibleManager;
@@ -101,25 +101,26 @@ export class WatchCollection {
   }
 
   hasLegendaryWatch(): boolean {
-    return WATCH_CATALOG.some((w) => w.grantsSlowMotion && this.hasWatch(w.id));
+    return WATCH_CATALOG.some(
+      (w) => w.grantsSlowMotion && w.obtainableInBuild && this.collectibles.hasCollected(w.id),
+    );
   }
 
   unlockWatch(id: string): boolean {
     const def = WATCH_CATALOG.find((w) => w.id === id);
     if (!def || !def.obtainableInBuild) return false;
     if (this.collectibles.hasCollected(def.id)) return false;
-
     this.collectibles.grantRewardItem(def.id, i18n.t(def.nameKey));
-    const progress = this.getProgress();
-    this.eventBus?.emit('collection:changed', progress);
+    this.eventBus?.emit('collection:changed', {
+      category: 'watches',
+      ...this.getProgress(),
+    });
     return true;
   }
 
   getProgress(): { collected: number; total: number } {
-    const entries = this.getEntries();
-    return {
-      collected: entries.filter((e) => e.collected).length,
-      total: entries.length,
-    };
+    const obtainable = WATCH_CATALOG.filter((w) => w.obtainableInBuild);
+    const collected = obtainable.filter((w) => this.collectibles.hasCollected(w.id)).length;
+    return { collected, total: obtainable.length };
   }
 }

@@ -104,12 +104,12 @@ export const COLLECTIBLE_DEFS: CollectibleDefinition[] = [
     kind: 'battery',
   },
   {
-    id: 'watch-classic',
-    name: 'Classic Wristwatch',
-    nameKey: 'item.watch-classic',
-    position: WORLD_ANCHORS.restaurant.classicWatch.position.clone(),
-    floor: WORLD_ANCHORS.restaurant.classicWatch.floor,
-    color: 0xf4c430,
+    id: 'watch-gshock',
+    name: 'Casio G-Shock DW-5600E',
+    nameKey: 'item.watch-gshock',
+    position: WORLD_ANCHORS.restaurant.gshockWatch.position.clone(),
+    floor: WORLD_ANCHORS.restaurant.gshockWatch.floor,
+    color: 0x334155,
     kind: 'watch',
   },
   {
@@ -200,7 +200,7 @@ export function bindContextAwareNpcDialogues(
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'Showroom fragrance display is quiet again—and Midnight Noir is safer with Security anyway.',
+              text: 'Showroom fragrance display is quiet again—and Le Male Le Parfum is safer with Security anyway.',
               textKey: 'ambient.danny.m5.1',
             },
             {
@@ -216,7 +216,7 @@ export function bindContextAwareNpcDialogues(
             {
               speaker: 'DANNY (SHOWROOM)',
               speakerKey: 'speaker.DANNY (SHOWROOM)',
-              text: 'Still cannot believe that watch turned up next to the Swedish meatballs.',
+              text: 'Still cannot believe that gold Rolex Daytona turned up next to the Swedish meatballs.',
               textKey: 'ambient.danny.m3.1',
             },
             {

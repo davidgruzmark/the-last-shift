@@ -27,7 +27,7 @@ export interface GameEvents {
     lastScorer: 'kfir' | 'opponent' | null;
     ballInRange: boolean;
   };
-  'collection:changed': { collected: number; total: number };
+  'collection:changed': { category?: 'perfumes' | 'watches'; collected: number; total: number };
   'language:changed': { lang: 'en' | 'he'; dir: 'ltr' | 'rtl' };
   'phone:callChanged': { active: boolean };
   'slowmo:changed': {

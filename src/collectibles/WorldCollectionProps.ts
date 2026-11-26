@@ -6,6 +6,7 @@ import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
 import type { Interactable } from '../interaction/Interactable';
 import type { InteractionManager } from '../interaction/InteractionManager';
+import type { DialogueLine, DialogueManager } from '../npcs/DialogueManager';
 import type { FloorId } from '../world/CollisionManager';
 import { WORLD_ANCHORS, type WorldAnchor } from '../world/WorldAnchors';
 import type { CollectibleManager } from './CollectibleManager';
@@ -146,10 +147,17 @@ class WorldCollectibleProp implements Interactable {
   }
 }
 
+export interface WorldCollectionHooks {
+  dialogue?: DialogueManager;
+  onJimmyChooCollected?: () => void;
+}
+
 /**
- * Spawns and manages the Phase 6.2 world collectibles for the remaining 4 perfumes
- * (Ocean King, Royal Essence, The Boss, Kfir Signature VIP locker) and 2 new watches
- * (IKEA Chrono Pro Epic, Shiftmaster Chronometer Legendary).
+ * Spawns and manages the real-world exploration pickups:
+ * - Perfumes: Dior Sauvage EDP (F2 Restaurant), Jimmy Choo Man EDT (Warehouse East), Armani Code Parfum (Control Room VIP Locker)
+ *   (JPG Le Male Le Parfum is M05's heist centerpiece)
+ * - Watches: TAG Heuer Carrera (F2 Kitchens), Omega Seamaster Diver 300M (Parking Lot East)
+ *   (Casio G-Shock is in F2 Restaurant via COLLECTIBLE_DEFS; Gold Rolex Daytona Ref. 126508 is M03's centerpiece)
  */
 export class WorldCollectionProps {
   readonly group = new THREE.Group();
@@ -163,13 +171,21 @@ export class WorldCollectionProps {
     perfumes: PerfumeCollection,
     watches: WatchCollection,
     eventBus: EventBus<GameEvents>,
+    hooks?: WorldCollectionHooks,
   ) {
-    this.group.name = 'Phase62CollectionProps';
+    this.group.name = 'RealWorldCollectionProps';
+
+    const showMonologue = (lines: DialogueLine[]): void => {
+      if (hooks?.dialogue && !hooks.dialogue.isActive()) {
+        hooks.dialogue.start(i18n.t('npc.Kfir'), lines);
+      }
+    };
 
     const addPerfumePickup = (
       id: string,
       variant: PerfumeVariant,
       anchor: WorldAnchor,
+      onCollected?: () => void,
     ): void => {
       const rig = createPerfumeBottle(variant);
       rig.group.scale.setScalar(1.25);
@@ -186,6 +202,7 @@ export class WorldCollectionProps {
           prop.state.collected = true;
           prop.state.animTimer = 0;
           perfumes.unlockPerfume(id);
+          onCollected?.();
         },
       });
       this.props.push(prop);
@@ -206,7 +223,7 @@ export class WorldCollectionProps {
         floor: anchor.floor,
         visual: rig.group,
         sparkles: rig.sparkles,
-        ringColor: rarity === 'Legendary' ? 0xfbbf24 : 0xc084fc,
+        ringColor: rarity === 'Legendary' ? 0xfbbf24 : rarity === 'Epic' ? 0xc084fc : 0x60a5fa,
         getPrompt: () => i18n.t('prompt.collectItem', { name: i18n.t(`item.${id}`).toUpperCase() }),
         canInteract: () => !collectibles.hasCollected(id),
         onTrigger: () => {
@@ -221,14 +238,32 @@ export class WorldCollectionProps {
       interactions.register(prop);
     };
 
-    // 1. Ocean King — F2 IKEA Restaurant Patio corner
-    addPerfumePickup('perfume-ocean-king', 'ocean-king', WORLD_ANCHORS.restaurant.oceanKing);
-    // 2. Royal Essence — F1 Market Hall Living vignette corner
-    addPerfumePickup('perfume-royal-essence', 'royal-essence', WORLD_ANCHORS.showroom.royalEssence);
-    // 3. The Boss — F1 High-Bay Warehouse East aisle
-    addPerfumePickup('perfume-the-boss', 'the-boss', WORLD_ANCHORS.warehouse.theBoss);
+    // 1. Dior Sauvage EDP — F2 IKEA Restaurant Patio (triggers Kfir's natural "ערסִים" joke)
+    addPerfumePickup('perfume-dior-sauvage', 'dior-sauvage', WORLD_ANCHORS.restaurant.diorSauvage, () => {
+      showMonologue([
+        {
+          speaker: 'KFIR',
+          speakerKey: 'speaker.KFIR',
+          text: 'Dior Sauvage... the undefeated classic for every arsim night out.',
+          textKey: 'dialogue.diorSauvage.1',
+        },
+      ]);
+    });
 
-    // 4. Kfir Signature — Control Room VIP Security Locker (unlocks with keycard-spare)
+    // 2. Jimmy Choo Man EDT — F1 High-Bay Warehouse East Aisle (triggers Lior joke + Friends milestone)
+    addPerfumePickup('perfume-jimmy-choo-man', 'jimmy-choo-man', WORLD_ANCHORS.warehouse.jimmyChooMan, () => {
+      showMonologue([
+        {
+          speaker: 'KFIR',
+          speakerKey: 'speaker.KFIR',
+          text: 'Jimmy Choo Man... Lior sprays so much of this you can smell him two aisles before you see him.',
+          textKey: 'dialogue.jimmyChoo.1',
+        },
+      ]);
+      hooks?.onJimmyChooCollected?.();
+    });
+
+    // 3. Armani Code Parfum — Control Room VIP Security Locker (unlocks with keycard-spare)
     const lockerPedestal = new THREE.Group();
     const cabinet = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.9, 0.55), palette.darkNavy);
     cabinet.position.y = 0.45;
@@ -243,28 +278,27 @@ export class WorldCollectionProps {
     );
     glassCase.position.y = 1.22;
     this.vipLockerDoor = glassCase;
-    const kfirBottle = createPerfumeBottle('kfir-signature');
-    kfirBottle.group.position.y = 0.94;
-    kfirBottle.group.scale.setScalar(1.2);
-    lockerPedestal.add(cabinet, glassCase, kfirBottle.group);
+    const armaniBottle = createPerfumeBottle('armani-code');
+    armaniBottle.group.position.y = 0.94;
+    armaniBottle.group.scale.setScalar(1.2);
+    lockerPedestal.add(cabinet, glassCase, armaniBottle.group);
 
-    // Offset base Y = 0 inside WorldCollectibleProp pivot
     const lockerWrap = new THREE.Group();
     lockerPedestal.position.y = -0.55;
     lockerWrap.add(lockerPedestal);
 
-    const kfirProp = new WorldCollectibleProp({
-      id: 'perfume-kfir-signature',
+    const armaniProp = new WorldCollectibleProp({
+      id: 'perfume-armani-code',
       position: WORLD_ANCHORS.controlRoom.vipLocker.position,
       floor: WORLD_ANCHORS.controlRoom.vipLocker.floor,
       radius: 2.6,
       visual: lockerWrap,
-      sparkles: kfirBottle.sparkles,
+      sparkles: armaniBottle.sparkles,
       getPrompt: () =>
         collectibles.hasCollected('keycard-spare')
           ? i18n.t('prompt.vipLockerOpen')
           : i18n.t('prompt.vipLockerLocked'),
-      canInteract: () => !collectibles.hasCollected('perfume-kfir-signature'),
+      canInteract: () => !collectibles.hasCollected('perfume-armani-code'),
       onTrigger: () => {
         if (!collectibles.hasCollected('keycard-spare')) {
           eventBus.emit('mission:notification', {
@@ -274,35 +308,34 @@ export class WorldCollectionProps {
           });
           return;
         }
-        if (collectibles.hasCollected('perfume-kfir-signature')) return;
-        kfirProp.state.collected = true;
-        kfirProp.state.animTimer = 0;
+        if (collectibles.hasCollected('perfume-armani-code')) return;
+        armaniProp.state.collected = true;
+        armaniProp.state.animTimer = 0;
         if (this.vipLockerDoor) this.vipLockerDoor.visible = false;
-        perfumes.unlockPerfume('perfume-kfir-signature');
+        perfumes.unlockPerfume('perfume-armani-code');
       },
     });
-    // Keep pedestal steady (do not spin entire cabinet inside pivot)
-    kfirProp.update = (dt: number) => {
-      if (kfirProp.state.collected) {
-        if (kfirProp.state.animTimer >= 0 && kfirProp.state.animTimer < 0.6) {
-          kfirProp.state.animTimer += dt;
-          const p = Math.min(1, kfirProp.state.animTimer / 0.6);
-          kfirBottle.group.position.y = 0.94 + p * 0.9;
-          kfirBottle.group.rotation.y += dt * 10;
-          if (p >= 1) kfirBottle.group.visible = false;
+    armaniProp.update = (dt: number) => {
+      if (armaniProp.state.collected) {
+        if (armaniProp.state.animTimer >= 0 && armaniProp.state.animTimer < 0.6) {
+          armaniProp.state.animTimer += dt;
+          const p = Math.min(1, armaniProp.state.animTimer / 0.6);
+          armaniBottle.group.position.y = 0.94 + p * 0.9;
+          armaniBottle.group.rotation.y += dt * 10;
+          if (p >= 1) armaniBottle.group.visible = false;
         }
         return;
       }
-      kfirBottle.group.rotation.y += dt * 1.4;
+      armaniBottle.group.rotation.y += dt * 1.4;
     };
-    this.props.push(kfirProp);
-    this.group.add(kfirProp.state.meshGroup);
-    interactions.register(kfirProp);
+    this.props.push(armaniProp);
+    this.group.add(armaniProp.state.meshGroup);
+    interactions.register(armaniProp);
 
-    // 5. IKEA Chrono Pro (Epic Watch) — F2 Showroom Kitchen display
-    addWatchPickup('watch-chronograph-pro', 'Epic', WORLD_ANCHORS.showroom.kitchenEpicWatch);
-    // 6. Shiftmaster Chronometer (Legendary Watch) — Parking Lot East Apron
-    addWatchPickup('watch-chrono-legend', 'Legendary', WORLD_ANCHORS.parking.legendaryWatch);
+    // 4. TAG Heuer Carrera Chronograph (Epic Watch) — F2 Showroom Kitchen display
+    addWatchPickup('watch-tag-carrera', 'Epic', WORLD_ANCHORS.showroom.tagCarrera);
+    // 5. Omega Seamaster Diver 300M (Rare Watch) — Parking Lot East Apron
+    addWatchPickup('watch-omega-seamaster', 'Rare', WORLD_ANCHORS.parking.omegaSeamaster);
   }
 
   getPropCount(): number {

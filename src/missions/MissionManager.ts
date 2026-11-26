@@ -404,8 +404,8 @@ export class MissionManager {
     if (obj.onCompleteEvent) {
       if (obj.onCompleteEvent === 'm5_collect_perfume') {
         this.collectibles?.grantRewardItem(
-          'perfume-midnight-noir',
-          i18n.t('item.perfume-midnight-noir'),
+          'perfume-jpg-le-male',
+          i18n.t('item.perfume-jpg-le-male'),
         );
       }
       this.eventBus.emit('mission:scriptEvent', { eventId: obj.onCompleteEvent });
