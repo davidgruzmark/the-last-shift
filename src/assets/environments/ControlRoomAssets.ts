@@ -97,6 +97,225 @@ export function createSecurityDesk(palette: MaterialPalette): PropBuildResult {
   };
 }
 
+/**
+ * Wide curved dual-operator security command console for Station A (Kfir) & Station B (Staff),
+ * paired with a dramatic 9-monitor (3x3) CCTV display wall binding live GPU feed textures.
+ */
+export function createCinematicSecurityConsole(
+  palette: MaterialPalette,
+  wallFeedTextures: readonly THREE.Texture[] = [],
+): PropBuildResult {
+  const group = new THREE.Group();
+  group.name = 'CinematicSecurityConsole';
+
+  const darkConsoleMat = new THREE.MeshStandardMaterial({
+    color: 0x1e2634,
+    roughness: 0.45,
+    metalness: 0.55,
+  });
+  const tabletopMat = new THREE.MeshStandardMaterial({
+    color: 0x263142,
+    roughness: 0.4,
+    metalness: 0.35,
+  });
+  const screenBezelMat = new THREE.MeshStandardMaterial({
+    color: 0x0f141d,
+    roughness: 0.42,
+    metalness: 0.65,
+  });
+
+  // Main center console + angled wings for Kfir (Left/Center) & Rotating Operator (Right)
+  const centerTop = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.1, 1.15), tabletopMat);
+  centerTop.position.set(0, 0.78, 0);
+  const pedestalL = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.74, 0.95), darkConsoleMat);
+  pedestalL.position.set(-2.1, 0.37, 0);
+  const pedestalM = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.74, 0.92), darkConsoleMat);
+  pedestalM.position.set(0.15, 0.37, 0);
+  const pedestalR = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.74, 0.95), darkConsoleMat);
+  pedestalR.position.set(2.1, 0.37, 0);
+  const modesty = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.65, 0.08), palette.darkNavy);
+  modesty.position.set(0, 0.4, -0.48);
+  group.add(centerTop, pedestalL, pedestalM, pedestalR, modesty);
+
+  // LED under-lip strip along front edge of command desk
+  const stripMat = new THREE.MeshStandardMaterial({
+    color: 0x38bdf8,
+    emissive: 0x38bdf8,
+    emissiveIntensity: 0.9,
+    roughness: 0.25,
+  });
+  const deskLed = new THREE.Mesh(new THREE.BoxGeometry(4.65, 0.035, 0.04), stripMat);
+  deskLed.position.set(0, 0.75, 0.57);
+  group.add(deskLed);
+
+  // Station A (x = -1.05): Kfir keyboard, mouse, PTZ camera joystick, coffee mug, desk phone
+  const kbA = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.03, 0.18), screenBezelMat);
+  kbA.position.set(-1.1, 0.845, 0.22);
+  const mouseA = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.03, 0.12), palette.metalGrey);
+  mouseA.position.set(-0.7, 0.845, 0.22);
+  const joyBase = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.2), darkConsoleMat);
+  joyBase.position.set(-0.42, 0.855, 0.2);
+  const joyStick = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.024, 0.14, 8), screenBezelMat);
+  joyStick.position.set(-0.42, 0.94, 0.2);
+  const joyKnob = new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 6), palette.accentRed);
+  joyKnob.position.set(-0.42, 1.01, 0.2);
+  const mug = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.045, 0.11, 8), palette.ikeaYellow);
+  mug.position.set(-1.62, 0.885, 0.24);
+  const phoneBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.22), screenBezelMat);
+  phoneBase.position.set(-1.86, 0.86, 0.12);
+  group.add(kbA, mouseA, joyBase, joyStick, joyKnob, mug, phoneBase);
+
+  // Station B (x = +1.35): Co-worker illuminated control pad, keyboard, clipboard
+  const kbB = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.03, 0.18), screenBezelMat);
+  kbB.position.set(1.35, 0.845, 0.22);
+  const mouseB = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.03, 0.12), palette.metalGrey);
+  mouseB.position.set(1.74, 0.845, 0.22);
+  const btnColors = [0x22c55e, 0x38bdf8, 0xf59e0b, 0xef4444];
+  btnColors.forEach((hex, idx) => {
+    const btn = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, 0.025, 0.05),
+      new THREE.MeshStandardMaterial({ color: hex, emissive: hex, emissiveIntensity: 0.9 }),
+    );
+    btn.position.set(0.76 + idx * 0.09, 0.845, 0.16);
+    group.add(btn);
+  });
+  group.add(kbB, mouseB);
+
+  // Dual local desk monitors on riser shelf
+  const riser = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.14, 0.34), screenBezelMat);
+  riser.position.set(0, 0.9, -0.32);
+  group.add(riser);
+
+  [-1.05, 1.35].forEach((mx, idx) => {
+    const deskMon = new THREE.Group();
+    deskMon.position.set(mx, 1.24, -0.34);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.48, 0.05), screenBezelMat);
+    const tex = wallFeedTextures[idx];
+    const screenMat = tex
+      ? new THREE.MeshStandardMaterial({
+          map: tex,
+          emissiveMap: tex,
+          emissive: new THREE.Color(0xdbeafe),
+          emissiveIntensity: 0.72,
+          roughness: 0.25,
+        })
+      : palette.cctvScreens[idx % palette.cctvScreens.length];
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.4), screenMat);
+    screen.position.z = 0.028;
+    const stand = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.18, 0.08), palette.metalGrey);
+    stand.position.set(0, -0.28, -0.02);
+    deskMon.add(frame, screen, stand);
+    group.add(deskMon);
+  });
+
+  // 9-Monitor (3x3) Large Cinematic CCTV Display Wall behind the console (z = -0.82 local)
+  const wallMountFrame = new THREE.Mesh(new THREE.BoxGeometry(5.1, 2.55, 0.12), screenBezelMat);
+  wallMountFrame.position.set(0, 2.48, -0.88);
+  group.add(wallMountFrame);
+
+  const cols = [-1.58, 0, 1.58];
+  const rows = [3.22, 2.46, 1.7];
+  let screenIdx = 0;
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < cols.length; c++) {
+      const mGroup = new THREE.Group();
+      mGroup.name = `CCTVWallMonitor_${screenIdx}`;
+      mGroup.position.set(cols[c], rows[r], -0.78);
+      mGroup.rotation.y = -cols[c] * 0.05;
+
+      const bezel = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.68, 0.06), screenBezelMat);
+      const tex =
+        screenIdx < wallFeedTextures.length ? wallFeedTextures[screenIdx] : undefined;
+      const panelMat = tex
+        ? new THREE.MeshStandardMaterial({
+            map: tex,
+            emissiveMap: tex,
+            emissive: new THREE.Color(0xe0f2fe),
+            emissiveIntensity: 0.82,
+            roughness: 0.25,
+          })
+        : palette.cctvScreens[screenIdx % palette.cctvScreens.length];
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.32, 0.58), panelMat);
+      screen.position.z = 0.033;
+      mGroup.add(bezel, screen);
+      group.add(mGroup);
+      screenIdx++;
+    }
+  }
+
+  setShadows(group);
+
+  return {
+    group,
+    colliderSize: new THREE.Vector3(4.8, 1.6, 1.25),
+    colliderOffset: new THREE.Vector3(0, 0.8, 0),
+  };
+}
+
+/** High-back executive security operator swivel chair with armrests. */
+export function createExecutiveChair(palette: MaterialPalette): PropBuildResult {
+  const group = new THREE.Group();
+  group.name = 'ExecutiveSecurityChair';
+
+  const leatherMat = new THREE.MeshStandardMaterial({ color: 0x161b24, roughness: 0.68 });
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.38, 0.06, 6), palette.metalDark);
+  base.position.y = 0.05;
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.38, 6), palette.metalGrey);
+  stem.position.y = 0.26;
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.11, 0.58), leatherMat);
+  seat.position.y = 0.48;
+  const backrest = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.78, 0.11), leatherMat);
+  backrest.position.set(0, 0.9, -0.25);
+  const headrest = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.18, 0.12), palette.ikeaBlue);
+  headrest.position.set(0, 1.36, -0.25);
+  group.add(base, stem, seat, backrest, headrest);
+
+  [-0.33, 0.33].forEach((x) => {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.22, 0.05), palette.metalGrey);
+    post.position.set(x, 0.59, -0.02);
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.05, 0.38), leatherMat);
+    arm.position.set(x, 0.71, -0.02);
+    group.add(post, arm);
+  });
+
+  setShadows(group);
+
+  return {
+    group,
+    colliderSize: new THREE.Vector3(0.58, 1.3, 0.58),
+    colliderOffset: new THREE.Vector3(0, 0.65, 0),
+  };
+}
+
+/** Blinking security server rack cabinet & cable conduit for Control Room atmosphere. */
+export function createServerRack(palette: MaterialPalette): PropBuildResult {
+  const group = new THREE.Group();
+  group.name = 'SecurityServerRack';
+
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 2.25, 0.75), palette.metalDark);
+  body.position.y = 1.125;
+  group.add(body);
+
+  const ledColors = [0x22c55e, 0x38bdf8, 0x22c55e, 0xf59e0b, 0x22c55e];
+  ledColors.forEach((hex, idx) => {
+    const bay = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.16, 0.03), palette.darkNavy);
+    bay.position.set(0, 0.45 + idx * 0.34, 0.38);
+    const led = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.035, 0.02),
+      new THREE.MeshStandardMaterial({ color: hex, emissive: hex, emissiveIntensity: 1.0 }),
+    );
+    led.position.set(-0.26, 0.45 + idx * 0.34, 0.4);
+    group.add(bay, led);
+  });
+
+  setShadows(group);
+  return {
+    group,
+    colliderSize: new THREE.Vector3(0.95, 2.25, 0.8),
+    colliderOffset: new THREE.Vector3(0, 1.125, 0),
+  };
+}
+
 /** Swivel security chair. */
 export function createOfficeChair(palette: MaterialPalette): PropBuildResult {
   const group = new THREE.Group();

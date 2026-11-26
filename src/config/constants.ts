@@ -39,6 +39,7 @@ export const IKEA_COLORS = {
 
 export type WorldZoneId =
   | 'Control Room'
+  | 'Staff Break Room'
   | 'Showroom'
   | 'Restaurant'
   | 'Warehouse'

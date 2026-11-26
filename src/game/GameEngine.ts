@@ -25,6 +25,7 @@ import { CAMPAIGN_MISSIONS } from '../missions/MissionDefinitions';
 import { MissionManager } from '../missions/MissionManager';
 import { MissionPropsController } from '../missions/MissionPropsController';
 import { ObjectiveMarker } from '../missions/ObjectiveMarker';
+import { ControlRoomStaffingSystem } from '../npcs/ControlRoomStaffingSystem';
 import { FootballMiniGame } from '../minigames/FootballMiniGame';
 import { PlayerAnimation } from '../player/PlayerAnimation';
 import { PlayerController } from '../player/PlayerController';
@@ -91,6 +92,7 @@ export class GameEngine {
   private readonly missionProps: MissionPropsController;
   private readonly objectiveMarker = new ObjectiveMarker();
   private readonly surveillance = new SurveillanceCameraSystem();
+  private readonly staffingSystem: ControlRoomStaffingSystem;
   private readonly vehicleManager: VehicleManager;
   private readonly sunLight: THREE.DirectionalLight;
 
@@ -125,8 +127,12 @@ export class GameEngine {
     this.dialogue = new DialogueManager(this.eventBus);
     this.phone = new PhoneManager(this.eventBus, true);
 
-    // Build connected IKEA World + Phase 3 interactables
-    this.worldManager = new WorldManager(this.assets, this.collision);
+    // Build connected IKEA World + live GPU CCTV wall + Phase 3/2B interactables
+    this.worldManager = new WorldManager(
+      this.assets,
+      this.collision,
+      this.surveillance.getWallFeedTextures(),
+    );
     this.scene.add(this.worldManager.root);
     this.sunLight = this.worldManager.sunLight;
 
@@ -157,6 +163,12 @@ export class GameEngine {
     );
     this.collectibles = handles.collectibles;
     this.computer = handles.computer;
+    this.staffingSystem = new ControlRoomStaffingSystem({
+      guards: handles.staffGuards,
+      staffDoor: handles.staffDoor,
+      collision: this.collision,
+      dialogue: this.dialogue,
+    });
     this.perfumeCollection = new PerfumeCollection(this.collectibles, this.eventBus);
     const initialPerfumes = this.perfumeCollection.getProgress();
     this.state.perfumesCollected = initialPerfumes.collected;
@@ -599,8 +611,9 @@ export class GameEngine {
       const worldDt = PHYSICS_STEP * worldScale;
       const playerDt = PHYSICS_STEP * playerScale;
 
-      // Advance moving mission obstacles/colliders before movement resolution
+      // Advance moving mission obstacles/colliders & Control Room guard rotation
       this.missionProps.update(worldDt);
+      this.staffingSystem.update(worldDt);
       this.footballMiniGame.update(
         worldDt,
         this.playerController.position,
@@ -693,6 +706,7 @@ export class GameEngine {
     );
 
     this.syncVisuals(rawDt * playerScale);
+    this.worldManager.updateAtmosphere(rawDt, this.state.currentZone);
 
     if (this.computer.isOpen()) {
       const canvases = this.interactionUI.getSurveillanceCanvases();
@@ -716,6 +730,13 @@ export class GameEngine {
         0,
         canvases.main,
         canvases.thumbs,
+      );
+      this.surveillance.updateWallMonitors(
+        rawDt,
+        this.renderer,
+        this.scene,
+        this.state.currentZone === 'Control Room',
+        false,
       );
     }
 

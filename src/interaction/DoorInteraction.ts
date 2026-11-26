@@ -107,6 +107,8 @@ export class DoorInteraction implements Interactable {
   private keyAxis: 'x' | 'z' = 'z';
   private keyBasePos = new THREE.Vector3();
   private lastPlayerPos = new THREE.Vector3(1e6, 0, 1e6);
+  private npcHoldTimer = 0;
+  private npcRelockOnClose = false;
   private highlightRing?: THREE.Mesh;
 
   private constructor(
@@ -597,6 +599,39 @@ export class DoorInteraction implements Interactable {
     return this.mode === 'manual' && !this.isUnlocking();
   }
 
+  /**
+   * Allows authorized NPCs (such as rotating Control Room security staff) to open
+   * and close hinged doors physically along their walk path with zero teleportation.
+   */
+  requestNpcPassage(npcPos: THREE.Vector3, authorized: boolean): 'clear' | 'opening' | 'blocked' {
+    if (this.mode !== 'manual') return 'clear';
+    if (this.isLocked && !authorized) return 'blocked';
+
+    const dist = Math.hypot(npcPos.x - this.worldCenter.x, npcPos.z - this.worldCenter.z);
+    if (dist > 2.6) return 'clear';
+
+    if (this.isLocked && authorized) {
+      this.isLocked = false;
+      this.npcRelockOnClose = Boolean(this.security);
+      if (this.lockLedMat) {
+        this.lockLedMat.color.setHex(0x22c55e);
+        this.lockLedMat.emissive.setHex(0x22c55e);
+      }
+    }
+
+    if (!this.isOpen) {
+      this.isOpen = true;
+      this.pendingRelock = false;
+      this.security?.onOpen?.();
+    }
+    this.npcHoldTimer = 1.15;
+
+    const fullyOpen = this.leaves.every(
+      (l) => Math.abs(l.currentAngle - l.openAngle) < 0.25,
+    );
+    return fullyOpen ? 'clear' : 'opening';
+  }
+
   getPromptText(): string {
     if (this.mode === 'auto') return '';
     if (this.isUnlocking()) {
@@ -653,6 +688,16 @@ export class DoorInteraction implements Interactable {
   update(dt: number, playerPos: THREE.Vector3): void {
     this.lastPlayerPos.copy(playerPos);
     const smooth = 1 - Math.exp(-8.5 * dt);
+
+    if (this.npcHoldTimer > 0) {
+      this.npcHoldTimer = Math.max(0, this.npcHoldTimer - dt);
+      if (this.npcHoldTimer === 0 && this.isOpen && !this.isPlayerInDoorway(playerPos)) {
+        this.isOpen = false;
+        this.pendingRelock = Boolean(this.security) || this.npcRelockOnClose;
+        this.npcRelockOnClose = false;
+        this.security?.onClose?.();
+      }
+    }
 
     if (this.unlockTimer >= 0) {
       const duration = this.security?.unlockDurationSec ?? DEFAULT_UNLOCK_DURATION_SEC;

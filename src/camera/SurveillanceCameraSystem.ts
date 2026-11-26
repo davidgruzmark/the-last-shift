@@ -5,9 +5,12 @@ const MAIN_WIDTH = 384;
 const MAIN_HEIGHT = 216;
 const THUMB_WIDTH = 160;
 const THUMB_HEIGHT = 90;
+const WALL_WIDTH = 256;
+const WALL_HEIGHT = 144;
 
 const MAIN_INTERVAL = 1 / 15; // ~15 FPS for selected live feed
 const THUMB_INTERVAL = 0.18; // Round-robin thumbnail refresh
+const WALL_INTERVAL = 0.1; // Round-robin 1 wall screen every 100ms when inside Control Room
 
 // Precomputed linear -> sRGB LUT so offscreen WebGLRenderTarget output matches screen brightness
 const LINEAR_TO_SRGB = new Uint8Array(256);
@@ -34,6 +37,7 @@ export class SurveillanceCameraSystem {
   private readonly entries: SurveillanceCamEntry[];
   private readonly mainTarget: THREE.WebGLRenderTarget;
   private readonly thumbTarget: THREE.WebGLRenderTarget;
+  private readonly wallTargets: THREE.WebGLRenderTarget[];
   private readonly mainPixelBuf = new Uint8Array(MAIN_WIDTH * MAIN_HEIGHT * 4);
   private readonly thumbPixelBuf = new Uint8Array(THUMB_WIDTH * THUMB_HEIGHT * 4);
 
@@ -44,9 +48,13 @@ export class SurveillanceCameraSystem {
   private elapsed = 0;
   private mainTimer = 0;
   private thumbTimer = 0;
+  private wallTimer = 0;
   private nextThumbIdx = 0;
+  private nextWallIdx = 0;
+  private wallInitialized = false;
   private lastRenderedActiveCam = -1;
   private renderCount = 0;
+  private wallRenderCount = 0;
 
   constructor() {
     this.entries = SECURITY_CAMERA_FEEDS.map((feed, idx) => {
@@ -71,14 +79,41 @@ export class SurveillanceCameraSystem {
       magFilter: THREE.LinearFilter,
       depthBuffer: true,
     });
+    this.wallTargets = this.entries.map(() => {
+      const rt = new THREE.WebGLRenderTarget(WALL_WIDTH, WALL_HEIGHT, {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        generateMipmaps: false,
+        depthBuffer: true,
+      });
+      rt.texture.colorSpace = THREE.SRGBColorSpace;
+      return rt;
+    });
   }
 
   getCameras(): readonly THREE.PerspectiveCamera[] {
     return this.entries.map((e) => e.camera);
   }
 
+  getWallFeedTexture(feedIndex: number): THREE.Texture {
+    const idx = Math.max(0, Math.min(feedIndex, this.wallTargets.length - 1));
+    return this.wallTargets[idx].texture;
+  }
+
+  getWallFeedTextures(): readonly THREE.Texture[] {
+    return this.wallTargets.map((rt) => rt.texture);
+  }
+
+  getWallFeedCount(): number {
+    return this.wallTargets.length;
+  }
+
   getRenderCount(): number {
     return this.renderCount;
+  }
+
+  getWallRenderCount(): number {
+    return this.wallRenderCount;
   }
 
   update(
@@ -180,9 +215,76 @@ export class SurveillanceCameraSystem {
     }
   }
 
+  /**
+   * Renders live 3D feeds directly into GPU WebGLRenderTarget textures bound to
+   * the Control Room CCTV wall monitors (zero CPU readback, zero cost when outside).
+   */
+  updateWallMonitors(
+    dt: number,
+    renderer: THREE.WebGLRenderer,
+    scene: THREE.Scene,
+    playerInControlRoom: boolean,
+    computerOpen: boolean,
+  ): void {
+    if (!playerInControlRoom || computerOpen || this.wallTargets.length === 0) {
+      this.wallTimer = 0;
+      return;
+    }
+
+    this.elapsed += dt;
+    this.wallTimer += dt;
+
+    for (const entry of this.entries) {
+      const panAngle = Math.sin(this.elapsed * 0.45 + entry.phaseOffset) * 0.08;
+      const cos = Math.cos(panAngle);
+      const sin = Math.sin(panAngle);
+      const rx = entry.baseOffset.x * cos - entry.baseOffset.z * sin;
+      const rz = entry.baseOffset.x * sin + entry.baseOffset.z * cos;
+      entry.camera.lookAt(
+        entry.camera.position.x + rx,
+        entry.baseLookAt.y,
+        entry.camera.position.z + rz,
+      );
+    }
+
+    const prevTarget = renderer.getRenderTarget();
+    const prevAutoUpdate = renderer.shadowMap.autoUpdate;
+    renderer.shadowMap.autoUpdate = false;
+
+    try {
+      if (!this.wallInitialized) {
+        this.wallInitialized = true;
+        for (let i = 0; i < this.wallTargets.length; i++) {
+          renderer.setRenderTarget(this.wallTargets[i]);
+          renderer.clear();
+          renderer.render(scene, this.entries[i].camera);
+          this.wallRenderCount += 1;
+        }
+        this.wallTimer = 0;
+        return;
+      }
+
+      if (this.wallTimer >= WALL_INTERVAL) {
+        const idx = this.nextWallIdx % this.wallTargets.length;
+        renderer.setRenderTarget(this.wallTargets[idx]);
+        renderer.clear();
+        renderer.render(scene, this.entries[idx].camera);
+        this.wallRenderCount += 1;
+        this.nextWallIdx = (idx + 1) % this.wallTargets.length;
+        this.wallTimer = 0;
+      }
+    } finally {
+      renderer.setRenderTarget(prevTarget);
+      renderer.shadowMap.autoUpdate = prevAutoUpdate;
+    }
+  }
+
   dispose(): void {
     this.mainTarget.dispose();
     this.thumbTarget.dispose();
+    for (const rt of this.wallTargets) {
+      rt.dispose();
+    }
   }
 
   private renderMainFeed(

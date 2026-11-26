@@ -33,6 +33,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
 
     // Zones
     'zone.Control Room': 'Control Room',
+    'zone.Staff Break Room': 'Staff Break Room',
     'zone.Showroom': 'Showroom',
     'zone.Restaurant': 'Restaurant',
     'zone.Warehouse': 'Warehouse',
@@ -248,10 +249,14 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'npc.Danny': 'Danny',
     'npc.Maya': 'Maya',
     'npc.Yossi': 'Yossi',
+    'npc.GuardAvi': 'Avi',
+    'npc.GuardOmer': 'Omer',
     'npc.Kfir': 'Kfir',
     'speaker.DANNY (SHOWROOM)': 'DANNY (SHOWROOM)',
     'speaker.MAYA (LIVING ROOM)': 'MAYA (LIVING ROOM)',
     'speaker.YOSSI (WAREHOUSE)': 'YOSSI (WAREHOUSE)',
+    'speaker.AVI (SECURITY)': 'AVI (SECURITY)',
+    'speaker.OMER (SECURITY)': 'OMER (SECURITY)',
     'speaker.KFIR': 'KFIR',
     'speaker.SHIFT MANAGER': 'SHIFT MANAGER',
     'speaker.YOSSI': 'YOSSI',
@@ -279,6 +284,10 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'ambient.yossi.m4.1': 'Forklift #2 is finally shut down and tagged for maintenance—hitting that emergency stop saved our shelves, Kfir.',
     'ambient.yossi.m4.2': 'Glad power cut in time. No more runaway rides in Aisle 01.',
     'ambient.yossi.m4.3': 'Rest of the warehouse is clear. Holler if anything else rolls loose.',
+    'ambient.avi.1': 'Monitoring cameras 01 through 06 with you, Kfir. Station B is holding steady.',
+    'ambient.avi.2': 'Appreciate the backup, Avi. Let me know when you rotate out.',
+    'ambient.omer.1': 'Just finishing my break in the staff room—ready to take Station B whenever Avi steps out.',
+    'ambient.omer.2': 'Sounds good, Omer. Coffee pot is still warm.',
 
     // Mission HUD & Banners
     'mission.badge.done': 'DONE',
@@ -449,6 +458,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
 
     // Zones
     'zone.Control Room': 'חדר בקרה',
+    'zone.Staff Break Room': 'חדר מנוחה ולוקרים',
     'zone.Showroom': 'אולם תצוגה',
     'zone.Restaurant': 'מסעדה',
     'zone.Warehouse': 'מחסן',
@@ -664,10 +674,14 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'npc.Danny': 'דני',
     'npc.Maya': 'מאיה',
     'npc.Yossi': 'יוסי',
+    'npc.GuardAvi': 'אבי',
+    'npc.GuardOmer': 'עומר',
     'npc.Kfir': 'כפיר',
     'speaker.DANNY (SHOWROOM)': 'דני (אולם תצוגה)',
     'speaker.MAYA (LIVING ROOM)': 'מאיה (סלון)',
     'speaker.YOSSI (WAREHOUSE)': 'יוסי (מחסן)',
+    'speaker.AVI (SECURITY)': 'אבי (אבטחה)',
+    'speaker.OMER (SECURITY)': 'עומר (אבטחה)',
     'speaker.KFIR': 'כפיר',
     'speaker.SHIFT MANAGER': 'מנהל משמרת',
     'speaker.YOSSI': 'יוסי',
@@ -695,6 +709,10 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'ambient.yossi.m4.1': 'מלגזה מס׳ 2 סוף סוף כבויה ומסומנת לטיפול טכני — עצירת החירום שלך הצילה לנו את המדפים, כפיר.',
     'ambient.yossi.m4.2': 'טוב שהחשמל נותק בזמן. בלי עוד נסיעות פרועות במעבר 01.',
     'ambient.yossi.m4.3': 'שאר המחסן שקט ונקי. תקרא לי אם עוד משהו יזוז כאן.',
+    'ambient.avi.1': 'אני על המוניטורים אתך, כפיר. עמדה ב׳ בבקרה יציבה.',
+    'ambient.avi.2': 'מעולה אבי, תעדכן כשאתה יוצא להחלפה.',
+    'ambient.omer.1': 'בדיוק מסיים הפסקה בחדר המנוחה — מוכן להחליף את אבי בעמדה ב׳.',
+    'ambient.omer.2': 'אחלה עומר, הקפה עדיין חם.',
 
     // Mission HUD & Banners
     'mission.badge.done': 'הושלם',

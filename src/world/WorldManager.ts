@@ -9,6 +9,7 @@ import type { EventBus, GameEvents } from '../core/EventBus';
 import { ComputerInteraction } from '../interaction/ComputerInteraction';
 import { DoorInteraction, type DoorKeySecurityConfig } from '../interaction/DoorInteraction';
 import type { InteractionManager } from '../interaction/InteractionManager';
+import { SECURITY_ROSTER_DEFS } from '../npcs/ControlRoomStaffingSystem';
 import type { DialogueManager } from '../npcs/DialogueManager';
 import { NPCInteraction } from '../npcs/NPCInteraction';
 import type { CollisionManager } from './CollisionManager';
@@ -20,33 +21,40 @@ export interface InteractiveWorldHandles {
   computer: ComputerInteraction;
   doors: DoorInteraction[];
   npcs: NPCInteraction[];
+  staffDoor: DoorInteraction;
+  staffGuards: NPCInteraction[];
 }
 
 /**
- * Coordinates all connected Phase 2/3 world zones, unified sky/shadow lighting,
- * interactive objects, and live player zone detection.
+ * Coordinates all connected Phase 2/3/2B world zones, unified sky/shadow lighting,
+ * dark interior Control Room atmosphere transitions, interactive objects, and live zone detection.
  */
 export class WorldManager {
   readonly root = new THREE.Group();
   readonly palette: MaterialPalette;
   readonly sunLight: THREE.DirectionalLight;
+  private readonly hemiLight: THREE.HemisphereLight;
   private readonly collision: CollisionManager;
   private readonly sunOffset = new THREE.Vector3(14, 24, 16);
 
-  constructor(assets: AssetManager, collision: CollisionManager) {
+  constructor(
+    assets: AssetManager,
+    collision: CollisionManager,
+    wallFeedTextures: readonly THREE.Texture[] = [],
+  ) {
     this.root.name = 'WorldRoot';
     this.collision = collision;
     this.palette = createPalette(assets);
 
-    const controlRoom = buildControlRoom(assets, collision, this.palette);
+    const controlRoom = buildControlRoom(assets, collision, this.palette, wallFeedTextures);
     this.root.add(controlRoom.group);
 
     const storeWorld = buildStoreWorld(this.palette, collision);
     this.root.add(storeWorld);
 
-    const hemiLight = new THREE.HemisphereLight(0xdceeff, 0x7d746b, 0.92);
-    hemiLight.position.set(15, 25, 0);
-    this.root.add(hemiLight);
+    this.hemiLight = new THREE.HemisphereLight(0xdceeff, 0x7d746b, 0.92);
+    this.hemiLight.position.set(15, 25, 0);
+    this.root.add(this.hemiLight);
 
     this.sunLight = new THREE.DirectionalLight(0xfff6e8, 1.25);
     this.sunLight.position.copy(this.sunOffset);
@@ -103,19 +111,34 @@ export class WorldManager {
       this.collision,
     );
 
-    const doors = [controlRoomDoor, entranceAutoDoors];
+    const southDoorZ = CONTROL_ROOM_BOUNDS.depth / 2 + CONTROL_ROOM_BOUNDS.wallThickness / 2;
+    const staffDoor = DoorInteraction.createManualHinged(
+      {
+        id: 'staff-break-door',
+        hingePos: new THREE.Vector3(-3.95, 0, southDoorZ),
+        width: 1.85,
+        height: 2.65,
+        thickness: 0.12,
+        axis: 'x',
+        openAngle: -Math.PI * 0.48,
+      },
+      this.palette,
+      this.collision,
+    );
+
+    const doors = [controlRoomDoor, staffDoor, entranceAutoDoors];
     for (const door of doors) {
       this.root.add(door.meshGroup);
       interactions.register(door);
     }
 
-    // 2. IKEA Employee NPCs
+    // 2. IKEA Employee NPCs + Rotating Control Room Security Roster
     const qaYossiOverlap =
       import.meta.env.DEV &&
       typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('qa') === 'yossi-overlap';
 
-    const npcs = EMPLOYEE_NPCS.map((def) => {
+    const storyNpcs = EMPLOYEE_NPCS.map((def) => {
       const effectiveDef =
         qaYossiOverlap && def.id === 'employee-yossi'
           ? {
@@ -130,6 +153,15 @@ export class WorldManager {
       return npc;
     });
 
+    const staffGuards = SECURITY_ROSTER_DEFS.map((def) => {
+      const guard = new NPCInteraction(def, this.palette, this.collision, dialogue);
+      this.root.add(guard.meshGroup);
+      interactions.register(guard);
+      return guard;
+    });
+
+    const npcs = [...storyNpcs, ...staffGuards];
+
     // 3. Collectibles
     const collectibles = new CollectibleManager(eventBus);
     for (const def of COLLECTIBLE_DEFS) {
@@ -138,21 +170,31 @@ export class WorldManager {
     }
     this.root.add(collectibles.group);
 
-    // 4. Control Room Security Computer
-    const computer = new ComputerInteraction(new THREE.Vector3(0, 0, -2.85), eventBus);
+    // 4. Control Room Security Computer (anchored at Station A desk)
+    const computer = new ComputerInteraction(new THREE.Vector3(-0.6, 0, -3.55), eventBus);
     interactions.register(computer);
 
-    return { collectibles, computer, doors, npcs };
+    return { collectibles, computer, doors, npcs, staffDoor, staffGuards };
+  }
+
+  /** Smoothly shifts ambient lighting dark inside the Control Room so monitor glow pops cleanly. */
+  updateAtmosphere(dt: number, zone: WorldZoneId): void {
+    const isDarkOps = zone === 'Control Room';
+    const targetHemi = isDarkOps ? 0.36 : 0.92;
+    const targetSun = isDarkOps ? 0.16 : 1.25;
+    const blend = 1 - Math.exp(-5.0 * dt);
+    this.hemiLight.intensity += (targetHemi - this.hemiLight.intensity) * blend;
+    this.sunLight.intensity += (targetSun - this.sunLight.intensity) * blend;
   }
 
   /** Keeps directional shadows crisp around Kfir across the entire connected map. */
   updateShadowTarget(playerPos: THREE.Vector3): void {
     const snappedX = Math.round(playerPos.x * 2) * 0.5;
     const snappedZ = Math.round(playerPos.z * 2) * 0.5;
-    this.sunLight.target.position.set(snappedX, 0, snappedZ);
+    this.sunLight.target.position.set(snappedX, playerPos.y, snappedZ);
     this.sunLight.position.set(
       snappedX + this.sunOffset.x,
-      this.sunOffset.y,
+      playerPos.y + this.sunOffset.y,
       snappedZ + this.sunOffset.z,
     );
   }
@@ -167,6 +209,15 @@ export class WorldManager {
       pos.z <= controlRoom.maxZ
     ) {
       return 'Control Room';
+    }
+
+    if (
+      pos.x >= controlRoom.minX &&
+      pos.x <= controlRoom.maxX &&
+      pos.z > controlRoom.maxZ &&
+      pos.z <= 12.2
+    ) {
+      return 'Staff Break Room';
     }
 
     if (pos.z < warehouse.maxZ) {
