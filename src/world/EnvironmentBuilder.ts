@@ -430,17 +430,17 @@ function buildWarehouse(
   entranceStripe.position.set(21, 0.025, maxZ - 0.4);
   group.add(entranceStripe);
 
-  // Expanded High-Bay Racks using InstancedMesh batching, leaving x in [13.5, 25.5] wide clear central corridor!
+  // Expanded High-Bay Racks using InstancedMesh batching, leaving x in [13.5, 30.0] clear central corridor & M02/M04 lanes!
   const rackSpots: Array<{ id: string; x: number; z: number }> = [
     { id: 'wh-rack-w1', x: 10.5, z: -20.0 },
     { id: 'wh-rack-w2', x: 10.5, z: -28.0 },
     { id: 'wh-rack-w3', x: 10.5, z: -36.0 },
-    { id: 'wh-rack-m1', x: 29.0, z: -20.0 },
-    { id: 'wh-rack-m2', x: 29.0, z: -28.0 },
-    { id: 'wh-rack-m3', x: 29.0, z: -36.0 },
-    { id: 'wh-rack-e1', x: 39.5, z: -20.0 },
-    { id: 'wh-rack-e2', x: 39.5, z: -28.0 },
-    { id: 'wh-rack-e3', x: 39.5, z: -36.0 },
+    { id: 'wh-rack-m1', x: 31.0, z: -20.0 },
+    { id: 'wh-rack-m2', x: 31.0, z: -28.0 },
+    { id: 'wh-rack-m3', x: 31.0, z: -36.0 },
+    { id: 'wh-rack-e1', x: 40.5, z: -20.0 },
+    { id: 'wh-rack-e2', x: 40.5, z: -28.0 },
+    { id: 'wh-rack-e3', x: 40.5, z: -36.0 },
   ];
 
   // Register solid collision footprint for every rack bay (1.6m x 7.4m x 6.2m)
@@ -530,9 +530,9 @@ function buildWarehouse(
 
   // Forklifts & Flatbed carts parked clearly outside M01/M04 active lanes
   placeProp(group, collision, 'wh-forklift-1', createForklift(palette), 15.8, -25.0, Math.PI * 0.12);
-  placeProp(group, collision, 'wh-forklift-2', createForklift(palette), 34.2, -33.5, -Math.PI * 0.75);
+  placeProp(group, collision, 'wh-forklift-2', createForklift(palette), 35.5, -33.5, -Math.PI * 0.75);
   placeProp(group, collision, 'wh-cart-1', createFlatbedCart(palette), 15.6, -18.5, Math.PI / 3);
-  placeProp(group, collision, 'wh-cart-2', createFlatbedCart(palette), 34.0, -19.5, -Math.PI / 4);
+  placeProp(group, collision, 'wh-cart-2', createFlatbedCart(palette), 35.5, -19.5, -Math.PI / 4);
 
   root.add(group);
 }

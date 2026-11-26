@@ -73,6 +73,7 @@ interface HingedLeaf {
 export class DoorInteraction implements Interactable {
   readonly id: string;
   readonly type = 'door' as const;
+  readonly floor = 1 as const;
   readonly radius: number;
   readonly colliderIds: readonly string[];
   readonly meshGroup = new THREE.Group();

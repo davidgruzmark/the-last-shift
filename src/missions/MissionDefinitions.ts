@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { WORLD_ANCHORS } from '../world/WorldAnchors';
 import type { MissionDefinition } from './MissionObjectives';
 
 export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
@@ -41,7 +42,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Inspect Camera 04 (Warehouse) on the control desk computer',
         titleKey: 'm1.obj.cam04',
         targetCamIndex: 3,
-        targetPos: new THREE.Vector3(0, 0, -2.85),
+        targetPos: WORLD_ANCHORS.controlRoom.computer.position.clone(),
+        floor: WORLD_ANCHORS.controlRoom.computer.floor,
       },
       {
         id: 'm1-pickup-radio',
@@ -49,14 +51,16 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Pick up the security radio',
         titleKey: 'm1.obj.radio',
         targetId: 'm1-radio',
-        targetPos: new THREE.Vector3(-1.8, 0, -2.1),
+        targetPos: WORLD_ANCHORS.controlRoom.m1Radio.position.clone(),
+        floor: WORLD_ANCHORS.controlRoom.m1Radio.floor,
       },
       {
         id: 'm1-leave-control',
         type: 'reach_location',
         title: 'Open the door and leave the control room',
         titleKey: 'm1.obj.leave',
-        targetPos: new THREE.Vector3(9.2, 0, 3.6),
+        targetPos: WORLD_ANCHORS.controlRoom.eastDoorExit.position.clone(),
+        floor: WORLD_ANCHORS.controlRoom.eastDoorExit.floor,
         radius: 2.2,
       },
       {
@@ -64,7 +68,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         type: 'reach_location',
         title: 'Reach the Self-Serve Warehouse',
         titleKey: 'm1.obj.reachWh',
-        targetPos: new THREE.Vector3(21.0, 0, -16.5),
+        targetPos: WORLD_ANCHORS.warehouse.entrance.position.clone(),
+        floor: WORLD_ANCHORS.warehouse.entrance.floor,
         radius: 2.8,
       },
       {
@@ -73,7 +78,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Investigate the suspicious activity in Aisle 02',
         titleKey: 'm1.obj.clue',
         targetId: 'm1-warehouse-clue',
-        targetPos: new THREE.Vector3(18.5, 0, -21.0),
+        targetPos: WORLD_ANCHORS.warehouse.m1Clue.position.clone(),
+        floor: WORLD_ANCHORS.warehouse.m1Clue.floor,
         completionDialogue: {
           speaker: 'Kfir',
           speakerKey: 'speaker.KFIR',
@@ -113,7 +119,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         type: 'reach_location',
         title: 'Reach the Warehouse incident location',
         titleKey: 'm2.obj.reach',
-        targetPos: new THREE.Vector3(17.5, 0, -18.2),
+        targetPos: WORLD_ANCHORS.warehouse.m2Reach.position.clone(),
+        floor: WORLD_ANCHORS.warehouse.m2Reach.floor,
         radius: 2.8,
         onCompleteEvent: 'm2_start_cart',
       },
@@ -126,6 +133,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         chaseDistance: 4.5,
         minTravelDistance: 8,
         targetPos: new THREE.Vector3(25.5, 0, -24.0),
+        floor: 1,
       },
       {
         id: 'm2-stop-cart',
@@ -135,6 +143,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         dynamicTargetKey: 'm2_cart',
         targetId: 'm2-runaway-cart',
         targetPos: new THREE.Vector3(26.0, 0, -20.5),
+        floor: 1,
       },
       {
         id: 'm2-investigate-cause',
@@ -144,6 +153,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         dynamicTargetKey: 'm2_clipboard',
         targetId: 'm2-cart-clipboard',
         targetPos: new THREE.Vector3(24.8, 0, -19.5),
+        floor: 1,
         completionDialogue: {
           speaker: 'Kfir',
           speakerKey: 'speaker.KFIR',
@@ -186,7 +196,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         type: 'reach_location',
         title: 'Head to the IKEA Showroom',
         titleKey: 'm3.obj.reach',
-        targetPos: new THREE.Vector3(13.5, 0, 2.5),
+        targetPos: WORLD_ANCHORS.showroomF2.livingRoom.position.clone(),
+        floor: WORLD_ANCHORS.showroomF2.livingRoom.floor,
         radius: 2.8,
       },
       {
@@ -197,9 +208,9 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         requiredCount: 2,
         targetIds: ['employee-danny', 'employee-maya', 'employee-yossi'],
         targetNpcPositions: {
-          'employee-danny': new THREE.Vector3(10.6, 0, 1.4),
-          'employee-maya': new THREE.Vector3(16.5, 0, 7.5),
-          'employee-yossi': new THREE.Vector3(18.4, 0, -22.8),
+          'employee-danny': WORLD_ANCHORS.showroom.danny.position.clone(),
+          'employee-maya': WORLD_ANCHORS.showroom.maya.position.clone(),
+          'employee-yossi': WORLD_ANCHORS.warehouse.yossi.position.clone(),
         },
         npcDialogues: {
           'employee-danny': [
@@ -315,7 +326,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         titleKey: 'm3.obj.box',
         hideMarker: true,
         targetId: 'm3-watch-box-clue',
-        targetPos: new THREE.Vector3(13.8, 0, -7.8),
+        targetPos: WORLD_ANCHORS.showroom.malmWatchBox.position.clone(),
+        floor: WORLD_ANCHORS.showroom.malmWatchBox.floor,
         completionDialogue: {
           speaker: 'Kfir',
           speakerKey: 'speaker.KFIR',
@@ -336,7 +348,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         titleKey: 'm3.obj.watch',
         hideMarker: true,
         targetId: 'm3-missing-watch',
-        targetPos: new THREE.Vector3(28.2, 0, -11.0),
+        targetPos: WORLD_ANCHORS.restaurant.missingWatch.position.clone(),
+        floor: WORLD_ANCHORS.restaurant.missingWatch.floor,
       },
       {
         id: 'm3-return-watch',
@@ -344,8 +357,9 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Return the watch to Danny in the Showroom',
         titleKey: 'm3.obj.return',
         targetIds: ['employee-danny'],
+        floor: WORLD_ANCHORS.showroom.danny.floor,
         targetNpcPositions: {
-          'employee-danny': new THREE.Vector3(10.6, 0, 1.4),
+          'employee-danny': WORLD_ANCHORS.showroom.danny.position.clone(),
         },
         npcDialogues: {
           'employee-danny': [
@@ -393,7 +407,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         type: 'reach_location',
         title: 'Rush to the Warehouse forklift area',
         titleKey: 'm4.obj.reach',
-        targetPos: new THREE.Vector3(21.0, 0, -17.5),
+        targetPos: WORLD_ANCHORS.warehouse.m4Reach.position.clone(),
+        floor: WORLD_ANCHORS.warehouse.m4Reach.floor,
         radius: 2.8,
         onCompleteEvent: 'm4_start_forklift',
       },
@@ -407,6 +422,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         minTravelDistance: 6,
         maxPlayerZ: -22,
         targetPos: new THREE.Vector3(21.0, 0, -33.5),
+        floor: 1,
       },
       {
         id: 'm4-pull-emergency-switch',
@@ -414,7 +430,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Activate the red Emergency Stop Switch on the North wall',
         titleKey: 'm4.obj.switch',
         targetId: 'm4-emergency-switch',
-        targetPos: new THREE.Vector3(21.0, 0, -37.2),
+        targetPos: WORLD_ANCHORS.warehouse.m4EmergencySwitch.position.clone(),
+        floor: WORLD_ANCHORS.warehouse.m4EmergencySwitch.floor,
         onCompleteEvent: 'm4_stop_forklift',
       },
       {
@@ -425,6 +442,7 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         dynamicTargetKey: 'm4_forklift',
         targetId: 'm4-forklift-inspect',
         targetPos: new THREE.Vector3(16.2, 0, -31.5),
+        floor: 1,
         completionDialogue: {
           speaker: 'Yossi',
           speakerKey: 'speaker.YOSSI',
@@ -474,7 +492,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         type: 'reach_location',
         title: 'Head to the Showroom luxury fragrance display',
         titleKey: 'm5.obj.reach',
-        targetPos: new THREE.Vector3(14.8, 0, 1.2),
+        targetPos: WORLD_ANCHORS.showroom.m5Reach.position.clone(),
+        floor: WORLD_ANCHORS.showroom.m5Reach.floor,
         radius: 2.8,
       },
       {
@@ -483,7 +502,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Inspect the empty Midnight Noir display stand',
         titleKey: 'm5.obj.inspect',
         targetId: 'm5-empty-display',
-        targetPos: new THREE.Vector3(15.2, 0, -1.8),
+        targetPos: WORLD_ANCHORS.showroom.m5EmptyDisplay.position.clone(),
+        floor: WORLD_ANCHORS.showroom.m5EmptyDisplay.floor,
         completionDialogue: {
           speaker: 'Kfir',
           speakerKey: 'speaker.KFIR',
@@ -511,8 +531,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         requiredCount: 2,
         targetIds: ['employee-danny', 'employee-maya'],
         targetNpcPositions: {
-          'employee-danny': new THREE.Vector3(10.6, 0, 1.4),
-          'employee-maya': new THREE.Vector3(16.5, 0, 7.5),
+          'employee-danny': WORLD_ANCHORS.showroom.danny.position.clone(),
+          'employee-maya': WORLD_ANCHORS.showroom.maya.position.clone(),
         },
         npcDialogues: {
           'employee-danny': [
@@ -626,7 +646,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         titleKey: 'm5.obj.bag',
         hideMarker: true,
         targetId: 'm5-clue-bag',
-        targetPos: new THREE.Vector3(19.5, 0, 16.5),
+        targetPos: WORLD_ANCHORS.checkout.bagClue.position.clone(),
+        floor: WORLD_ANCHORS.checkout.bagClue.floor,
         completionDialogue: {
           speaker: 'Kfir',
           speakerKey: 'speaker.KFIR',
@@ -653,7 +674,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         titleKey: 'm5.obj.recover',
         hideMarker: true,
         targetId: 'm5-midnight-noir-bottle',
-        targetPos: new THREE.Vector3(29.8, 0, 21.8),
+        targetPos: WORLD_ANCHORS.checkout.midnightNoir.position.clone(),
+        floor: WORLD_ANCHORS.checkout.midnightNoir.floor,
         onCompleteEvent: 'm5_collect_perfume',
         completionDialogue: {
           speaker: 'Kfir',
@@ -674,8 +696,9 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Report back to Danny in the Showroom',
         titleKey: 'm5.obj.report',
         targetIds: ['employee-danny'],
+        floor: WORLD_ANCHORS.showroom.danny.floor,
         targetNpcPositions: {
-          'employee-danny': new THREE.Vector3(10.6, 0, 1.4),
+          'employee-danny': WORLD_ANCHORS.showroom.danny.position.clone(),
         },
         npcDialogues: {
           'employee-danny': [
@@ -726,7 +749,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         titleKey: 'm6.obj.findBall',
         dynamicTargetKey: 'm6_ball',
         targetId: 'm6-warehouse-ball',
-        targetPos: new THREE.Vector3(21.0, 0, -16.8),
+        targetPos: WORLD_ANCHORS.warehouse.ballPickup.position.clone(),
+        floor: WORLD_ANCHORS.warehouse.ballPickup.floor,
         completionDialogue: {
           speaker: 'Kfir',
           speakerKey: 'speaker.KFIR',
@@ -746,7 +770,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Head to the Parking Lot IKEA Mini-Pitch and challenge Yossi',
         titleKey: 'm6.obj.startMatch',
         targetId: 'm6-start-match',
-        targetPos: new THREE.Vector3(23.5, 0, 44.0),
+        targetPos: WORLD_ANCHORS.parking.miniPitchCenter.position.clone(),
+        floor: WORLD_ANCHORS.parking.miniPitchCenter.floor,
       },
       {
         id: 'm6-win-match',
@@ -754,7 +779,8 @@ export const CAMPAIGN_MISSIONS: readonly MissionDefinition[] = [
         title: 'Win the 1v1 football match (Kick: F · Pass: G)',
         titleKey: 'm6.obj.winMatch',
         targetId: 'fifa-at-ikea',
-        targetPos: new THREE.Vector3(23.5, 0, 44.0),
+        targetPos: WORLD_ANCHORS.parking.miniPitchCenter.position.clone(),
+        floor: WORLD_ANCHORS.parking.miniPitchCenter.floor,
       },
     ],
     reward: {

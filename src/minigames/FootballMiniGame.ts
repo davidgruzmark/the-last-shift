@@ -50,6 +50,7 @@ const PLAYER_BODY_HEIGHT = 1.75;
 class PitchInteractable implements Interactable {
   readonly id: string;
   readonly type = 'interact' as const;
+  readonly floor = 1 as const;
   readonly radius: number;
   readonly meshGroup: THREE.Group;
 

@@ -6,6 +6,8 @@ import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
 import type { Interactable } from '../interaction/Interactable';
 import type { InteractionManager } from '../interaction/InteractionManager';
+import type { FloorId } from '../world/CollisionManager';
+import { WORLD_ANCHORS, type WorldAnchor } from '../world/WorldAnchors';
 import type { CollectibleManager } from './CollectibleManager';
 import type { PerfumeCollection } from './PerfumeCollection';
 import type { WatchCollection } from './WatchCollection';
@@ -25,6 +27,7 @@ class WorldCollectibleProp implements Interactable {
   readonly id: string;
   readonly type = 'collectible' as const;
   readonly radius: number;
+  readonly floor: FloorId;
   readonly state: AnimatedPickup;
 
   private readonly worldPos: THREE.Vector3;
@@ -35,6 +38,7 @@ class WorldCollectibleProp implements Interactable {
   constructor(options: {
     id: string;
     position: THREE.Vector3;
+    floor?: FloorId;
     radius?: number;
     visual: THREE.Group;
     sparkles: THREE.Object3D[];
@@ -45,6 +49,7 @@ class WorldCollectibleProp implements Interactable {
   }) {
     this.id = options.id;
     this.radius = options.radius ?? 2.4;
+    this.floor = options.floor ?? (options.position.y >= 5.3 ? 2 : 1);
     this.worldPos = options.position.clone();
     this.getPromptFn = options.getPrompt;
     this.canInteractFn = options.canInteract;
@@ -164,13 +169,14 @@ export class WorldCollectionProps {
     const addPerfumePickup = (
       id: string,
       variant: PerfumeVariant,
-      pos: THREE.Vector3,
+      anchor: WorldAnchor,
     ): void => {
       const rig = createPerfumeBottle(variant);
       rig.group.scale.setScalar(1.25);
       const prop = new WorldCollectibleProp({
         id,
-        position: pos,
+        position: anchor.position,
+        floor: anchor.floor,
         visual: rig.group,
         sparkles: rig.sparkles,
         getPrompt: () => i18n.t('prompt.collectItem', { name: i18n.t(`item.${id}`).toUpperCase() }),
@@ -190,13 +196,14 @@ export class WorldCollectionProps {
     const addWatchPickup = (
       id: string,
       rarity: WatchVisualRarity,
-      pos: THREE.Vector3,
+      anchor: WorldAnchor,
     ): void => {
       const rig = createWatchModel(rarity);
       rig.group.scale.setScalar(1.15);
       const prop = new WorldCollectibleProp({
         id,
-        position: pos,
+        position: anchor.position,
+        floor: anchor.floor,
         visual: rig.group,
         sparkles: rig.sparkles,
         ringColor: rarity === 'Legendary' ? 0xfbbf24 : 0xc084fc,
@@ -214,12 +221,12 @@ export class WorldCollectionProps {
       interactions.register(prop);
     };
 
-    // 1. Ocean King — IKEA Restaurant Patio corner
-    addPerfumePickup('perfume-ocean-king', 'ocean-king', new THREE.Vector3(33.4, 0, -3.0));
-    // 2. Royal Essence — Living Room Vignette shelf corner
-    addPerfumePickup('perfume-royal-essence', 'royal-essence', new THREE.Vector3(9.2, 0, 12.2));
-    // 3. The Boss — Warehouse East Self-Serve Bay
-    addPerfumePickup('perfume-the-boss', 'the-boss', new THREE.Vector3(33.4, 0, -34.8));
+    // 1. Ocean King — F2 IKEA Restaurant Patio corner
+    addPerfumePickup('perfume-ocean-king', 'ocean-king', WORLD_ANCHORS.restaurant.oceanKing);
+    // 2. Royal Essence — F1 Market Hall Living vignette corner
+    addPerfumePickup('perfume-royal-essence', 'royal-essence', WORLD_ANCHORS.showroom.royalEssence);
+    // 3. The Boss — F1 High-Bay Warehouse East aisle
+    addPerfumePickup('perfume-the-boss', 'the-boss', WORLD_ANCHORS.warehouse.theBoss);
 
     // 4. Kfir Signature — Control Room VIP Security Locker (unlocks with keycard-spare)
     const lockerPedestal = new THREE.Group();
@@ -248,7 +255,8 @@ export class WorldCollectionProps {
 
     const kfirProp = new WorldCollectibleProp({
       id: 'perfume-kfir-signature',
-      position: new THREE.Vector3(-5.2, 0, -4.6),
+      position: WORLD_ANCHORS.controlRoom.vipLocker.position,
+      floor: WORLD_ANCHORS.controlRoom.vipLocker.floor,
       radius: 2.6,
       visual: lockerWrap,
       sparkles: kfirBottle.sparkles,
@@ -291,10 +299,10 @@ export class WorldCollectionProps {
     this.group.add(kfirProp.state.meshGroup);
     interactions.register(kfirProp);
 
-    // 5. IKEA Chrono Pro (Epic Watch) — Showroom Kitchen showcase
-    addWatchPickup('watch-chronograph-pro', 'Epic', new THREE.Vector3(28.4, 0, 10.2));
+    // 5. IKEA Chrono Pro (Epic Watch) — F2 Showroom Kitchen display
+    addWatchPickup('watch-chronograph-pro', 'Epic', WORLD_ANCHORS.showroom.kitchenEpicWatch);
     // 6. Shiftmaster Chronometer (Legendary Watch) — Parking Lot East Apron
-    addWatchPickup('watch-chrono-legend', 'Legendary', new THREE.Vector3(39.2, 0, 28.5));
+    addWatchPickup('watch-chrono-legend', 'Legendary', WORLD_ANCHORS.parking.legendaryWatch);
   }
 
   getPropCount(): number {

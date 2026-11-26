@@ -3,12 +3,14 @@ import { createWatchModel } from '../assets/collectibles/WatchModel';
 import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
 import type { Interactable } from '../interaction/Interactable';
+import type { FloorId } from '../world/CollisionManager';
 
 export interface CollectibleDefinition {
   id: string;
   name: string;
   nameKey?: string;
   position: THREE.Vector3;
+  floor?: FloorId;
   color: number;
   kind: 'keycard' | 'perfume' | 'watch' | 'battery';
 }
@@ -67,6 +69,7 @@ class CollectibleItem implements Interactable {
   readonly id: string;
   readonly type = 'collectible' as const;
   readonly radius = 2.2;
+  readonly floor: FloorId;
   readonly meshGroup = new THREE.Group();
 
   private readonly itemName: string;
@@ -80,6 +83,7 @@ class CollectibleItem implements Interactable {
 
   constructor(def: CollectibleDefinition, onCollect: (item: CollectibleItem) => void) {
     this.id = def.id;
+    this.floor = def.floor ?? (def.position.y >= 5.3 ? 2 : 1);
     this.itemName = def.name;
     this.itemNameKey = def.nameKey;
     this.worldPos = def.position.clone();

@@ -5,7 +5,7 @@ import { CONTROL_ROOM_BOUNDS } from '../config/constants';
 import { i18n } from '../i18n/LocalizationManager';
 import type { Interactable } from '../interaction/Interactable';
 import type { DoorInteraction } from '../interaction/DoorInteraction';
-import type { CollisionManager } from '../world/CollisionManager';
+import type { CollisionManager, FloorId } from '../world/CollisionManager';
 import type { DialogueLine, DialogueManager } from './DialogueManager';
 
 export interface NpcDefinition {
@@ -13,6 +13,7 @@ export interface NpcDefinition {
   name: string;
   nameKey?: string;
   position: THREE.Vector3;
+  floor?: FloorId;
   facingYaw: number;
   visual?: NpcVisualConfig;
   lines: DialogueLine[];
@@ -35,6 +36,7 @@ export class NPCInteraction implements Interactable {
   readonly id: string;
   readonly type = 'npc' as const;
   readonly radius = 2.6;
+  readonly floor: FloorId;
   readonly colliderIds: readonly string[];
   readonly meshGroup: THREE.Group;
 
@@ -72,6 +74,7 @@ export class NPCInteraction implements Interactable {
     dialogue: DialogueManager,
   ) {
     this.id = def.id;
+    this.floor = def.floor ?? (def.position.y >= 5.3 ? 2 : 1);
     this.npcName = def.name;
     this.npcNameKey = def.nameKey;
     this.defaultLines = def.lines;

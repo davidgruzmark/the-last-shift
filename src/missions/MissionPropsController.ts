@@ -10,7 +10,8 @@ import { WAREHOUSE_BALL_PICKUP_ZONE } from '../config/constants';
 import type { Interactable, InteractableType } from '../interaction/Interactable';
 import type { InteractionManager } from '../interaction/InteractionManager';
 import { i18n } from '../i18n/LocalizationManager';
-import type { CollisionManager } from '../world/CollisionManager';
+import type { CollisionManager, FloorId } from '../world/CollisionManager';
+import { WORLD_ANCHORS } from '../world/WorldAnchors';
 import {
   WorldProgressionManager,
   type WorldProgressionState,
@@ -22,6 +23,7 @@ class SimpleMissionProp implements Interactable {
   readonly id: string;
   readonly type: InteractableType;
   readonly radius: number;
+  readonly floor: FloorId;
   readonly colliderIds?: readonly string[];
   readonly meshGroup = new THREE.Group();
 
@@ -37,6 +39,7 @@ class SimpleMissionProp implements Interactable {
     id: string;
     type: InteractableType;
     position: THREE.Vector3;
+    floor?: FloorId;
     promptText: string;
     radius?: number;
     colliderIds?: readonly string[];
@@ -47,6 +50,7 @@ class SimpleMissionProp implements Interactable {
     this.id = options.id;
     this.type = options.type;
     this.radius = options.radius ?? 2.6;
+    this.floor = options.floor ?? (options.position.y >= 5.3 ? 2 : 1);
     this.colliderIds = options.colliderIds;
     this.worldPos = options.position.clone();
     this.promptText = options.promptText;
@@ -238,7 +242,8 @@ export class MissionPropsController {
     this.radioProp = new SimpleMissionProp({
       id: 'm1-radio',
       type: 'interact',
-      position: new THREE.Vector3(-1.8, 0, -2.1),
+      position: WORLD_ANCHORS.controlRoom.m1Radio.position,
+      floor: WORLD_ANCHORS.controlRoom.m1Radio.floor,
       promptText: 'PRESS E TO PICK UP RADIO',
       mesh: radioVisual,
       isEligible: () => this.missions.getActiveObjective()?.id === 'm1-pickup-radio',
@@ -261,7 +266,8 @@ export class MissionPropsController {
     this.warehouseClueProp = new SimpleMissionProp({
       id: 'm1-warehouse-clue',
       type: 'interact',
-      position: new THREE.Vector3(18.5, 0, -21.0),
+      position: WORLD_ANCHORS.warehouse.m1Clue.position,
+      floor: WORLD_ANCHORS.warehouse.m1Clue.floor,
       promptText: 'PRESS E TO INVESTIGATE SCATTERED BOXES',
       mesh: clueVisual,
       isEligible: () => this.missions.getActiveObjective()?.id === 'm1-investigate-clue',
@@ -393,7 +399,8 @@ export class MissionPropsController {
     this.watchBoxClueProp = new SimpleMissionProp({
       id: 'm3-watch-box-clue',
       type: 'interact',
-      position: new THREE.Vector3(13.8, 0, -7.8),
+      position: WORLD_ANCHORS.showroom.malmWatchBox.position,
+      floor: WORLD_ANCHORS.showroom.malmWatchBox.floor,
       promptText: 'PRESS E TO INSPECT EMPTY WATCH BOX',
       mesh: watchBoxVisual,
       isEligible: () => {
@@ -413,7 +420,8 @@ export class MissionPropsController {
     this.missingWatchProp = new SimpleMissionProp({
       id: 'm3-missing-watch',
       type: 'collect',
-      position: new THREE.Vector3(28.2, 0, -11.0),
+      position: WORLD_ANCHORS.restaurant.missingWatch.position,
+      floor: WORLD_ANCHORS.restaurant.missingWatch.floor,
       promptText: 'PRESS E TO COLLECT MISSING WATCH',
       mesh: watchVisual,
       isEligible: () => {
@@ -472,7 +480,8 @@ export class MissionPropsController {
     this.emergencySwitchProp = new SimpleMissionProp({
       id: 'm4-emergency-switch',
       type: 'activate_switch',
-      position: new THREE.Vector3(21.0, 0, -37.2),
+      position: WORLD_ANCHORS.warehouse.m4EmergencySwitch.position,
+      floor: WORLD_ANCHORS.warehouse.m4EmergencySwitch.floor,
       promptText: 'PRESS E TO ACTIVATE EMERGENCY STOP',
       radius: 3.0,
       mesh: switchVisual,
@@ -527,7 +536,8 @@ export class MissionPropsController {
     this.m5EmptyDisplayProp = new SimpleMissionProp({
       id: 'm5-empty-display',
       type: 'interact',
-      position: new THREE.Vector3(15.2, 0, -1.8),
+      position: WORLD_ANCHORS.showroom.m5EmptyDisplay.position,
+      floor: WORLD_ANCHORS.showroom.m5EmptyDisplay.floor,
       promptText: 'PRESS E TO INSPECT EMPTY DISPLAY',
       radius: 2.8,
       mesh: displayVisual,
@@ -550,7 +560,8 @@ export class MissionPropsController {
     this.m5ClueBagProp = new SimpleMissionProp({
       id: 'm5-clue-bag',
       type: 'interact',
-      position: new THREE.Vector3(19.5, 0, 16.5),
+      position: WORLD_ANCHORS.checkout.bagClue.position,
+      floor: WORLD_ANCHORS.checkout.bagClue.floor,
       promptText: 'PRESS E TO INSPECT IKEA BAG',
       radius: 2.8,
       mesh: bagVisual,
@@ -572,7 +583,8 @@ export class MissionPropsController {
     this.m5PerfumeBottleProp = new SimpleMissionProp({
       id: 'm5-midnight-noir-bottle',
       type: 'collect',
-      position: new THREE.Vector3(29.8, 0, 21.8),
+      position: WORLD_ANCHORS.checkout.midnightNoir.position,
+      floor: WORLD_ANCHORS.checkout.midnightNoir.floor,
       promptText: 'PRESS E TO COLLECT MIDNIGHT NOIR',
       radius: 2.9,
       mesh: bottleStage,

@@ -2,14 +2,16 @@ import * as THREE from 'three';
 import type { CollectibleDefinition } from '../collectibles/CollectibleManager';
 import type { MissionManager } from '../missions/MissionManager';
 import type { NpcDefinition, NPCInteraction } from '../npcs/NPCInteraction';
+import { WORLD_ANCHORS } from '../world/WorldAnchors';
 
 export const EMPLOYEE_NPCS: NpcDefinition[] = [
   {
     id: 'employee-danny',
     name: 'Danny',
     nameKey: 'npc.Danny',
-    position: new THREE.Vector3(10.6, 0, 1.4),
-    facingYaw: -Math.PI * 0.35,
+    position: WORLD_ANCHORS.showroom.danny.position.clone(),
+    floor: WORLD_ANCHORS.showroom.danny.floor,
+    facingYaw: WORLD_ANCHORS.showroom.danny.facingYaw ?? -Math.PI * 0.35,
     visual: { skinColor: 0xeac0a2, hairColor: 0x3b281c },
     lines: [
       { speaker: 'DANNY (SHOWROOM)', speakerKey: 'speaker.DANNY (SHOWROOM)', text: 'Hey Kfir, everything okay?', textKey: 'ambient.danny.1' },
@@ -26,8 +28,9 @@ export const EMPLOYEE_NPCS: NpcDefinition[] = [
     id: 'employee-maya',
     name: 'Maya',
     nameKey: 'npc.Maya',
-    position: new THREE.Vector3(16.5, 0, 7.5),
-    facingYaw: Math.PI * 0.75,
+    position: WORLD_ANCHORS.showroom.maya.position.clone(),
+    floor: WORLD_ANCHORS.showroom.maya.floor,
+    facingYaw: WORLD_ANCHORS.showroom.maya.facingYaw ?? Math.PI * 0.75,
     visual: { skinColor: 0xf0c9b2, hairColor: 0x5c331c, variant: 'female', hairStyle: 'ponytail' },
     lines: [
       {
@@ -49,10 +52,11 @@ export const EMPLOYEE_NPCS: NpcDefinition[] = [
     id: 'employee-yossi',
     name: 'Yossi',
     nameKey: 'npc.Yossi',
-    position: new THREE.Vector3(18.4, 0, -22.8),
-    facingYaw: 0.2,
+    position: WORLD_ANCHORS.warehouse.yossi.position.clone(),
+    floor: WORLD_ANCHORS.warehouse.yossi.floor,
+    facingYaw: WORLD_ANCHORS.warehouse.yossi.facingYaw ?? 0.2,
     patrolPoints: [
-      new THREE.Vector3(18.4, 0, -22.8),
+      WORLD_ANCHORS.warehouse.yossi.position.clone(),
       new THREE.Vector3(18.6, 0, -26.8),
     ],
     patrolSpeed: 1.6,
@@ -85,7 +89,8 @@ export const COLLECTIBLE_DEFS: CollectibleDefinition[] = [
     id: 'keycard-spare',
     name: 'Spare Security Keycard',
     nameKey: 'item.keycard-spare',
-    position: new THREE.Vector3(-3.0, 0, 3.6),
+    position: WORLD_ANCHORS.controlRoom.spareKeycard.position.clone(),
+    floor: WORLD_ANCHORS.controlRoom.spareKeycard.floor,
     color: 0x1e90ff,
     kind: 'keycard',
   },
@@ -93,7 +98,8 @@ export const COLLECTIBLE_DEFS: CollectibleDefinition[] = [
     id: 'flashlight-led',
     name: 'Security LED Flashlight',
     nameKey: 'item.flashlight-led',
-    position: new THREE.Vector3(14.2, 0, -6.0),
+    position: WORLD_ANCHORS.showroom.flashlight.position.clone(),
+    floor: WORLD_ANCHORS.showroom.flashlight.floor,
     color: 0x38bdf8,
     kind: 'battery',
   },
@@ -101,7 +107,8 @@ export const COLLECTIBLE_DEFS: CollectibleDefinition[] = [
     id: 'watch-classic',
     name: 'Classic Wristwatch',
     nameKey: 'item.watch-classic',
-    position: new THREE.Vector3(29.5, 0, -6.5),
+    position: WORLD_ANCHORS.restaurant.classicWatch.position.clone(),
+    floor: WORLD_ANCHORS.restaurant.classicWatch.floor,
     color: 0xf4c430,
     kind: 'watch',
   },
@@ -109,7 +116,8 @@ export const COLLECTIBLE_DEFS: CollectibleDefinition[] = [
     id: 'radio-battery',
     name: 'Radio Battery Pack',
     nameKey: 'item.radio-battery',
-    position: new THREE.Vector3(24.5, 0, -22.5),
+    position: WORLD_ANCHORS.warehouse.radioBattery.position.clone(),
+    floor: WORLD_ANCHORS.warehouse.radioBattery.floor,
     color: 0x2ecc71,
     kind: 'battery',
   },

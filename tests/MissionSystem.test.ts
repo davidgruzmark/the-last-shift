@@ -12,6 +12,7 @@ import { DialogueManager } from '../src/npcs/DialogueManager';
 import { NPCInteraction } from '../src/npcs/NPCInteraction';
 import { PhoneManager } from '../src/ui/PhoneManager';
 import { CollisionManager } from '../src/world/CollisionManager';
+import { WORLD_ANCHORS } from '../src/world/WorldAnchors';
 
 describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => {
   function setupCampaign() {
@@ -40,8 +41,8 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
         dialogue,
       );
 
-    const danny = makeNpc('employee-danny', 'Danny', new THREE.Vector3(10.6, 0, 1.4));
-    const maya = makeNpc('employee-maya', 'Maya', new THREE.Vector3(16.5, 0, 7.5));
+    const danny = makeNpc('employee-danny', 'Danny', WORLD_ANCHORS.showroom.danny.position.clone());
+    const maya = makeNpc('employee-maya', 'Maya', WORLD_ANCHORS.showroom.maya.position.clone());
     const yossi = makeNpc(
       'employee-yossi',
       'Yossi',
@@ -124,7 +125,13 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
     // --- MISSION 03 (2-of-3 clue gathering + hidden spoiler markers) ---
     mm.continueAfterCompletion();
     expect(mm.getActiveMission()?.id).toBe('mission-03');
-    mm.update(0.016, new THREE.Vector3(13.5, 0, 2.5));
+    mm.update(0.016, WORLD_ANCHORS.showroomF2.livingRoom.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroomF2.livingRoom.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     expect(mm.getActiveObjective()?.id).toBe('m3-gather-clues');
 
     danny.onInteract();
@@ -188,7 +195,13 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
     expect(mm.getActiveMission()?.id).toBe('mission-05');
     expect(mm.getActiveObjective()?.id).toBe('m5-reach-display');
 
-    mm.update(0.016, new THREE.Vector3(14.8, 0, 1.2));
+    mm.update(0.016, WORLD_ANCHORS.showroom.m5Reach.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroom.m5Reach.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     expect(mm.getActiveObjective()?.id).toBe('m5-inspect-display');
 
     mm.notifyInteract('m5-empty-display');
@@ -304,7 +317,13 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
 
     // M03: verify finding watch box early after 1 clue advances cleanly & clears Danny override
     mm.continueAfterCompletion();
-    mm.update(0.016, new THREE.Vector3(13.5, 0, 2.5));
+    mm.update(0.016, WORLD_ANCHORS.showroomF2.livingRoom.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroomF2.livingRoom.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     danny.onInteract();
     while (dialogue.isActive()) dialogue.advance();
     expect(mm.getActiveObjective()?.id).toBe('m3-gather-clues');

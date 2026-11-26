@@ -63,6 +63,7 @@ export const SECURITY_CAMERA_FEEDS: readonly CameraFeedInfo[] = [
 export class ComputerInteraction implements Interactable {
   readonly id = 'control-room-computer';
   readonly type = 'computer' as const;
+  readonly floor = 1 as const;
   readonly radius = 2.8;
 
   private readonly worldPos: THREE.Vector3;

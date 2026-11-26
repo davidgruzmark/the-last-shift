@@ -20,6 +20,7 @@ import { NPCInteraction } from '../src/npcs/NPCInteraction';
 import { PlayerAnimation } from '../src/player/PlayerAnimation';
 import { PhoneManager } from '../src/ui/PhoneManager';
 import { CollisionManager } from '../src/world/CollisionManager';
+import { WORLD_ANCHORS } from '../src/world/WorldAnchors';
 import { WorldProgressionManager } from '../src/world/WorldProgressionManager';
 
 function buildScenario() {
@@ -100,8 +101,14 @@ function advanceToMission03Clues(s: ReturnType<typeof buildScenario>): void {
   // Complete M02
   completeMission02(s);
 
-  // Enter M03 showroom clues objective
-  s.mm.update(0.016, new THREE.Vector3(13.5, 0, 2.5));
+  // Enter M03 showroom clues objective on Floor 2
+  s.mm.update(0.016, WORLD_ANCHORS.showroomF2.livingRoom.position.clone(), {
+    committedFloor: 2,
+    onTransition: false,
+    lastGroundedPos: WORLD_ANCHORS.showroomF2.livingRoom.position.clone(),
+    lastGroundedFloor: 2,
+    supportingSurfaceId: 'f2-slab-west',
+  });
   expect(s.mm.getActiveObjective()?.id).toBe('m3-gather-clues');
 }
 
@@ -150,7 +157,13 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
     completeMission04(sB);
 
     sB.phone.declineCall();
-    sB.mm.update(0.016, new THREE.Vector3(14.8, 0, 1.2));
+    sB.mm.update(0.016, WORLD_ANCHORS.showroom.m5Reach.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroom.m5Reach.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     sB.mm.notifyInteract('m5-empty-display');
     while (sB.dialogue.isActive()) sB.dialogue.advance();
     expect(sB.mm.getActiveObjective()?.id).toBe('m5-interview-witnesses');
@@ -196,7 +209,13 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
 
     completeMission02(s);
 
-    s.mm.update(0.016, new THREE.Vector3(13.5, 0, 2.5));
+    s.mm.update(0.016, WORLD_ANCHORS.showroomF2.livingRoom.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroomF2.livingRoom.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     s.props.update(0.05);
     expect(byName('MissionProp_m3-watch-box-clue').visible).toBe(true);
     expect(byName('MissionProp_m4-emergency-switch').visible).toBe(false);
@@ -222,7 +241,13 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
     expect(byName('MissionProp_m5-clue-bag').visible).toBe(false);
     expect(byName('MissionProp_m5-midnight-noir-bottle').visible).toBe(false);
 
-    s.mm.update(0.016, new THREE.Vector3(14.8, 0, 1.2));
+    s.mm.update(0.016, WORLD_ANCHORS.showroom.m5Reach.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroom.m5Reach.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     s.mm.notifyInteract('m5-empty-display');
     while (s.dialogue.isActive()) s.dialogue.advance();
     s.maya.onInteract();
@@ -284,7 +309,13 @@ describe('Phase 6.2.1 World Reactivity, NPC Consistency, Investigations, Door Se
     expect(s.dialogue.getCurrentLine()?.text).toContain('runaway furniture cart');
     s.dialogue.close();
 
-    s.mm.update(0.016, new THREE.Vector3(13.5, 0, 2.5));
+    s.mm.update(0.016, WORLD_ANCHORS.showroomF2.livingRoom.position.clone(), {
+      committedFloor: 2,
+      onTransition: false,
+      lastGroundedPos: WORLD_ANCHORS.showroomF2.livingRoom.position.clone(),
+      lastGroundedFloor: 2,
+      supportingSurfaceId: 'f2-slab-west',
+    });
     s.mm.notifyInteract('m3-watch-box-clue');
     while (s.dialogue.isActive()) s.dialogue.advance();
     s.mm.notifyInteract('m3-missing-watch');
