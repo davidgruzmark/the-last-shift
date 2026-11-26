@@ -758,7 +758,8 @@ export class GameEngine {
     }
 
     const focusPos = activeCar ? activeCar.position : this.playerController.position;
-    this.state.currentZone = this.worldManager.getZoneAt(focusPos);
+    const activeFloor = inCar ? 1 : this.playerController.getFloorState().committedFloor;
+    this.state.currentZone = this.worldManager.getZoneAt(focusPos, activeFloor);
     this.worldManager.updateShadowTarget(focusPos);
 
     this.state.playerPosition.copy(focusPos);

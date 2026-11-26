@@ -12,9 +12,11 @@ import type { InteractionManager } from '../interaction/InteractionManager';
 import { SECURITY_ROSTER_DEFS } from '../npcs/ControlRoomStaffingSystem';
 import type { DialogueManager } from '../npcs/DialogueManager';
 import { NPCInteraction } from '../npcs/NPCInteraction';
-import type { CollisionManager } from './CollisionManager';
+import type { CollisionManager, FloorId } from './CollisionManager';
 import { buildControlRoom } from './ControlRoomBuilder';
 import { buildStoreWorld } from './EnvironmentBuilder';
+import { buildShowroomFloor2 } from './ShowroomFloor2Builder';
+import { resolveFloorRegion, WORLD_ANCHORS } from './WorldAnchors';
 
 export interface InteractiveWorldHandles {
   collectibles: CollectibleManager;
@@ -51,6 +53,9 @@ export class WorldManager {
 
     const storeWorld = buildStoreWorld(this.palette, collision);
     this.root.add(storeWorld);
+
+    const floor2Showroom = buildShowroomFloor2(this.palette, collision);
+    this.root.add(floor2Showroom);
 
     this.hemiLight = new THREE.HemisphereLight(0xdceeff, 0x7d746b, 0.92);
     this.hemiLight.position.set(15, 25, 0);
@@ -171,7 +176,7 @@ export class WorldManager {
     this.root.add(collectibles.group);
 
     // 4. Control Room Security Computer (anchored at Station A desk)
-    const computer = new ComputerInteraction(new THREE.Vector3(-0.6, 0, -3.55), eventBus);
+    const computer = new ComputerInteraction(WORLD_ANCHORS.controlRoom.computer.position.clone(), eventBus);
     interactions.register(computer);
 
     return { collectibles, computer, doors, npcs, staffDoor, staffGuards };
@@ -199,48 +204,10 @@ export class WorldManager {
     );
   }
 
-  getZoneAt(pos: THREE.Vector3): WorldZoneId {
-    const { controlRoom, restaurant, warehouse, checkout, parkingLot } = WORLD_ZONES;
-
-    if (
-      pos.x >= controlRoom.minX &&
-      pos.x <= controlRoom.maxX &&
-      pos.z >= controlRoom.minZ &&
-      pos.z <= controlRoom.maxZ
-    ) {
-      return 'Control Room';
-    }
-
-    if (
-      pos.x >= controlRoom.minX &&
-      pos.x <= controlRoom.maxX &&
-      pos.z > controlRoom.maxZ &&
-      pos.z <= 12.2
-    ) {
-      return 'Staff Break Room';
-    }
-
-    if (pos.z < warehouse.maxZ) {
-      return 'Warehouse';
-    }
-
-    if (
-      pos.x >= restaurant.minX &&
-      pos.x <= restaurant.maxX &&
-      pos.z >= restaurant.minZ &&
-      pos.z <= restaurant.maxZ
-    ) {
-      return 'Restaurant';
-    }
-
-    if (pos.z >= parkingLot.minZ) {
-      return 'Parking Lot';
-    }
-
-    if (pos.z >= checkout.minZ) {
-      return 'Checkout';
-    }
-
-    return 'Showroom';
+  getZoneAt(pos: THREE.Vector3, committedFloor?: FloorId): WorldZoneId {
+    const region = resolveFloorRegion(pos, undefined, committedFloor);
+    if (region) return region.zone;
+    if (pos.y >= 5.3) return 'Showroom';
+    return 'Market Hall';
   }
 }

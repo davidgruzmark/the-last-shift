@@ -40,6 +40,7 @@ export const IKEA_COLORS = {
 export type WorldZoneId =
   | 'Control Room'
   | 'Staff Break Room'
+  | 'Market Hall'
   | 'Showroom'
   | 'Restaurant'
   | 'Warehouse'
@@ -47,11 +48,11 @@ export type WorldZoneId =
   | 'Parking Lot';
 
 export const WORLD_ZONES = {
-  controlRoom: { minX: -7, maxX: 7, minZ: -6, maxZ: 6, height: 4.2 },
-  showroom: { minX: 7, maxX: 35, minZ: -14, maxZ: 14, height: 5.5 },
-  restaurant: { minX: 25, maxX: 35, minZ: -14, maxZ: -2 },
-  warehouse: { minX: 7, maxX: 35, minZ: -38, maxZ: -14, height: 7.0 },
-  checkout: { minX: 7, maxX: 35, minZ: 14, maxZ: 24, height: 5.5 },
+  controlRoom: { minX: -7, maxX: 7, minZ: -6, maxZ: 6, height: 4.6 },
+  showroom: { minX: 7, maxX: 45, minZ: -14, maxZ: 14, height: 5.8 },
+  restaurant: { minX: 30.5, maxX: 45, minZ: -14, maxZ: 1.8 },
+  warehouse: { minX: 7, maxX: 45, minZ: -44, maxZ: -14, height: 9.0 },
+  checkout: { minX: 7, maxX: 45, minZ: 14, maxZ: 24, height: 5.8 },
   parkingLot: { minX: -12, maxX: 46, minZ: 24, maxZ: 52 },
 } as const;
 

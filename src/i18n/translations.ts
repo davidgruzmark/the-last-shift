@@ -34,6 +34,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     // Zones
     'zone.Control Room': 'Control Room',
     'zone.Staff Break Room': 'Staff Break Room',
+    'zone.Market Hall': 'Market Hall',
     'zone.Showroom': 'Showroom',
     'zone.Restaurant': 'Restaurant',
     'zone.Warehouse': 'Warehouse',
@@ -459,6 +460,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     // Zones
     'zone.Control Room': 'חדר בקרה',
     'zone.Staff Break Room': 'חדר מנוחה ולוקרים',
+    'zone.Market Hall': 'אולם שוק (קומה 1)',
     'zone.Showroom': 'אולם תצוגה',
     'zone.Restaurant': 'מסעדה',
     'zone.Warehouse': 'מחסן',

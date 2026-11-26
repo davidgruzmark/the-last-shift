@@ -184,3 +184,41 @@ export class NavGraph {
     return a.position.distanceTo(b.position) + floorBonus;
   }
 }
+
+/**
+ * Builds the main two-floor store navigation graph connecting F1 Market Hall,
+ * Up/Down Escalators (directed), Wide Staircase (bidirectional), F2 Showroom, and Restaurant.
+ */
+export function createStoreNavGraph(): NavGraph {
+  const g = new NavGraph();
+  g.addNode({ id: 'f1-ctrl-exit', position: new THREE.Vector3(9.2, 0, 3.6), floor: 1, kind: 'floor' });
+  g.addNode({ id: 'f1-market-center', position: new THREE.Vector3(17.5, 0, 4.0), floor: 1, kind: 'floor' });
+  g.addNode({ id: 'f1-esc-up-bottom', position: new THREE.Vector3(21.6, 0, 12.6), floor: 1, kind: 'escalator' });
+  g.addNode({ id: 'f1-esc-down-bottom', position: new THREE.Vector3(24.4, 0, 12.6), floor: 1, kind: 'escalator' });
+  g.addNode({ id: 'f1-stairs-bottom', position: new THREE.Vector3(27.9, 0, 12.6), floor: 1, kind: 'stair_entry' });
+  g.addNode({ id: 'stairs-mid', position: new THREE.Vector3(27.9, 2.9, 7.0), floor: 'transition', kind: 'stair_mid' });
+  g.addNode({ id: 'f2-esc-up-top', position: new THREE.Vector3(21.6, 5.8, 1.4), floor: 2, kind: 'escalator' });
+  g.addNode({ id: 'f2-esc-down-top', position: new THREE.Vector3(24.4, 5.8, 1.4), floor: 2, kind: 'escalator' });
+  g.addNode({ id: 'f2-stairs-top', position: new THREE.Vector3(27.9, 5.8, 1.4), floor: 2, kind: 'stair_exit' });
+  g.addNode({ id: 'f2-living', position: new THREE.Vector3(14.0, 5.8, 6.0), floor: 2, kind: 'floor' });
+  g.addNode({ id: 'f2-kitchens', position: new THREE.Vector3(36.5, 5.8, 10.5), floor: 2, kind: 'floor' });
+  g.addNode({ id: 'f2-restaurant', position: new THREE.Vector3(36.8, 5.8, -5.5), floor: 2, kind: 'floor' });
+
+  g.addEdge({ from: 'f1-ctrl-exit', to: 'f1-market-center', kind: 'walk' });
+  g.addEdge({ from: 'f1-market-center', to: 'f1-esc-up-bottom', kind: 'walk' });
+  g.addEdge({ from: 'f1-esc-up-bottom', to: 'f1-esc-down-bottom', kind: 'walk' });
+  g.addEdge({ from: 'f1-esc-down-bottom', to: 'f1-stairs-bottom', kind: 'walk' });
+
+  // Directed escalators + bidirectional wide stairs
+  g.addEdge({ from: 'f1-esc-up-bottom', to: 'f2-esc-up-top', kind: 'escalator', directed: true });
+  g.addEdge({ from: 'f2-esc-down-top', to: 'f1-esc-down-bottom', kind: 'escalator', directed: true });
+  g.addEdge({ from: 'f1-stairs-bottom', to: 'stairs-mid', kind: 'stair' });
+  g.addEdge({ from: 'stairs-mid', to: 'f2-stairs-top', kind: 'stair' });
+
+  g.addEdge({ from: 'f2-esc-up-top', to: 'f2-esc-down-top', kind: 'walk' });
+  g.addEdge({ from: 'f2-esc-down-top', to: 'f2-stairs-top', kind: 'walk' });
+  g.addEdge({ from: 'f2-esc-up-top', to: 'f2-living', kind: 'walk' });
+  g.addEdge({ from: 'f2-stairs-top', to: 'f2-restaurant', kind: 'walk' });
+  g.addEdge({ from: 'f2-restaurant', to: 'f2-kitchens', kind: 'walk' });
+  return g;
+}

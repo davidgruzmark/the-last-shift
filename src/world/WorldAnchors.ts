@@ -48,12 +48,30 @@ function anchor(
 export const WORLD_ANCHORS = {
   controlRoom: {
     spawn: anchor('control.spawn', 0, 0, 2.5, 1, 'Control Room', Math.PI),
-    computer: anchor('control.computer', 0, 0, -2.85, 1, 'Control Room', Math.PI),
+    computer: anchor('control.computer', -0.6, 0, -3.55, 1, 'Control Room', Math.PI),
     m1Radio: anchor('control.m1Radio', -1.8, 0, -2.1, 1, 'Control Room'),
     vipLocker: anchor('control.vipLocker', -5.2, 0, -4.6, 1, 'Control Room'),
     spareKeycard: anchor('control.spareKeycard', -3.0, 0, 3.6, 1, 'Control Room'),
     eastDoor: anchor('control.eastDoor', 7.15, 0, 3.6, 1, 'Control Room'),
-    eastDoorExit: anchor('control.eastDoorExit', 9.2, 0, 3.6, 1, 'Showroom'),
+    eastDoorExit: anchor('control.eastDoorExit', 9.2, 0, 3.6, 1, 'Market Hall'),
+  },
+  vertical: {
+    escalatorUpBottom: anchor('vertical.escalatorUpBottom', 21.6, 0, 12.6, 1, 'Market Hall'),
+    escalatorUpTop: anchor('vertical.escalatorUpTop', 21.6, 5.8, 1.4, 2, 'Showroom'),
+    escalatorDownTop: anchor('vertical.escalatorDownTop', 24.4, 5.8, 1.4, 2, 'Showroom'),
+    escalatorDownBottom: anchor('vertical.escalatorDownBottom', 24.4, 0, 12.6, 1, 'Market Hall'),
+    stairsBottom: anchor('vertical.stairsBottom', 27.9, 0, 12.6, 1, 'Market Hall'),
+    stairsTop: anchor('vertical.stairsTop', 27.9, 5.8, 1.4, 2, 'Showroom'),
+  },
+  showroomF2: {
+    livingRoom: anchor('showroomF2.livingRoom', 14.0, 5.8, 6.0, 2, 'Showroom'),
+    bedrooms: anchor('showroomF2.bedrooms', 13.5, 5.8, 18.0, 2, 'Showroom'),
+    kitchens: anchor('showroomF2.kitchens', 36.5, 5.8, 10.5, 2, 'Showroom'),
+    northPromenade: anchor('showroomF2.northPromenade', 15.0, 5.8, -8.0, 2, 'Showroom'),
+  },
+  restaurantF2: {
+    counter: anchor('restaurantF2.counter', 37.5, 5.8, -11.6, 2, 'Restaurant'),
+    diningCenter: anchor('restaurantF2.diningCenter', 36.8, 5.8, -5.5, 2, 'Restaurant'),
   },
   showroom: {
     entry: anchor('showroom.entry', 13.5, 0, 2.5, 1, 'Showroom'),
@@ -95,12 +113,14 @@ export const WORLD_ANCHORS = {
 } as const;
 
 export const DEFAULT_FLOOR_REGIONS: readonly WorldFloorRegion[] = [
-  { id: 'reg-control', floor: 1, zone: 'Control Room', minX: -7, maxX: 7, minY: -0.5, maxY: 4.5, minZ: -6, maxZ: 6 },
-  { id: 'reg-warehouse', floor: 1, zone: 'Warehouse', minX: 7, maxX: 35, minY: -0.5, maxY: 7.5, minZ: -38, maxZ: -14 },
-  { id: 'reg-restaurant', floor: 1, zone: 'Restaurant', minX: 25, maxX: 35, minY: -0.5, maxY: 5.6, minZ: -14, maxZ: -2 },
-  { id: 'reg-showroom', floor: 1, zone: 'Showroom', minX: 7, maxX: 35, minY: -0.5, maxY: 5.6, minZ: -14, maxZ: 14 },
-  { id: 'reg-checkout', floor: 1, zone: 'Checkout', minX: 7, maxX: 35, minY: -0.5, maxY: 5.6, minZ: 14, maxZ: 24 },
-  { id: 'reg-parking', floor: 1, zone: 'Parking Lot', minX: -12, maxX: 46, minY: -0.5, maxY: 8.0, minZ: 24, maxZ: 52 },
+  { id: 'reg-control', floor: 1, zone: 'Control Room', minX: -7, maxX: 7, minY: -0.5, maxY: 4.7, minZ: -6, maxZ: 6 },
+  { id: 'reg-staff', floor: 1, zone: 'Staff Break Room', minX: -7, maxX: 7, minY: -0.5, maxY: 4.7, minZ: 6.01, maxZ: 12.2 },
+  { id: 'reg-warehouse', floor: 1, zone: 'Warehouse', minX: 7, maxX: 45, minY: -0.5, maxY: 9.5, minZ: -44, maxZ: -14 },
+  { id: 'reg-restaurant-f2', floor: 2, zone: 'Restaurant', minX: 30.5, maxX: 45, minY: 5.3, maxY: 11.0, minZ: -14, maxZ: 1.8 },
+  { id: 'reg-showroom-f2', floor: 2, zone: 'Showroom', minX: 7, maxX: 45, minY: 5.3, maxY: 11.0, minZ: -14, maxZ: 24 },
+  { id: 'reg-markethall-f1', floor: 1, zone: 'Market Hall', minX: 7, maxX: 45, minY: -0.5, maxY: 5.75, minZ: -14, maxZ: 14 },
+  { id: 'reg-checkout-f1', floor: 1, zone: 'Checkout', minX: 7, maxX: 45, minY: -0.5, maxY: 5.75, minZ: 14, maxZ: 24 },
+  { id: 'reg-parking', floor: 1, zone: 'Parking Lot', minX: -24, maxX: 60, minY: -0.5, maxY: 10.0, minZ: 24, maxZ: 80 },
 ];
 
 /** Resolves explicit 3D region matching a world position and optional committed floor. */
