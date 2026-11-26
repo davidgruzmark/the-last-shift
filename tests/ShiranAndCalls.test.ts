@@ -154,4 +154,50 @@ describe('Phase 6.2 Shiran Milestone Messages & Incoming Call Separation', () =>
     const msg = phone.deliverShiranMilestone('m9-trigger');
     expect(msg?.text).toBe('מתי אתה חוזר הביתה?');
   });
+
+  it('delivers staggered Friends Group Chat bursts across shift-start, M03 Daytona, Jimmy Choo, and M06', () => {
+    const bus = new EventBus<GameEvents>();
+    const phone = new PhoneManager(bus, true);
+
+    phone.deliverFriendsMilestone('shift-start');
+    expect(phone.hasGroupEventSent('shift-start')).toBe(true);
+    // Delayed burst not yet delivered at t=0
+    expect(phone.getMessages('friends')).toHaveLength(0);
+
+    phone.update(4.0);
+    expect(phone.getMessages('friends')).toHaveLength(1);
+    expect(phone.getMessages('friends')[0].sender).toBe('David');
+
+    phone.update(4.0);
+    expect(phone.getMessages('friends')).toHaveLength(2);
+    expect(phone.getMessages('friends')[1].sender).toBe('Mor');
+
+    // Switch to Hebrew and verify live localized friend names & messages
+    i18n.setLanguage('he');
+    const heFriends = phone.getMessages('friends');
+    expect(heFriends[0].sender).toBe('דוד');
+    expect(heFriends[1].sender).toBe('מור');
+    i18n.setLanguage('en');
+
+    // Immediate + staggered M03 Gold Rolex Daytona reaction
+    phone.deliverFriendsMilestone('m3-daytona');
+    expect(phone.getMessages('friends')).toHaveLength(3);
+    phone.update(7.0);
+    expect(phone.getMessages('friends')).toHaveLength(5);
+
+    // Duplicate trigger does not re-send
+    phone.deliverFriendsMilestone('m3-daytona');
+    expect(phone.getMessages('friends')).toHaveLength(5);
+
+    // Jimmy Choo Man pickup burst mentions Lior cleanly
+    phone.deliverFriendsMilestone('jimmy-choo-found');
+    expect(phone.getMessages('friends').at(-1)?.sender).toBe('Lior');
+    phone.update(4.0);
+    expect(phone.getMessages('friends').at(-1)?.text).toContain('Jimmy Choo');
+
+    // M06 completion burst
+    phone.deliverFriendsMilestone('m6-complete');
+    phone.update(7.0);
+    expect(phone.getMessages('friends').length).toBeGreaterThanOrEqual(10);
+  });
 });

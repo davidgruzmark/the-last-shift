@@ -188,7 +188,10 @@ export class GameEngine {
       this.perfumeCollection,
       this.watchCollection,
       this.eventBus,
-      { dialogue: this.dialogue },
+      {
+        dialogue: this.dialogue,
+        onJimmyChooCollected: () => this.phone.deliverFriendsMilestone('jimmy-choo-found'),
+      },
     );
     this.scene.add(this.collectionProps.group);
 
@@ -319,6 +322,7 @@ export class GameEngine {
       typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('qa') === 'm6';
     this.missionManager.startCampaign(qaM6 ? 5 : 0);
+    this.phone.deliverFriendsMilestone('shift-start');
   }
 
   setGraphicsQuality(quality: GraphicsQuality): void {
@@ -700,6 +704,7 @@ export class GameEngine {
       playerFloor,
     );
     this.missionManager.update(rawDt * worldScale, focusPos, playerFloor);
+    this.phone.update(rawDt);
     this.objectiveMarker.setTarget(this.missionManager.getCurrentMarkerPosition());
     this.objectiveMarker.update(rawDt);
     this.missionUI.updateNavigation(

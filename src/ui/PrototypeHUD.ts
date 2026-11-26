@@ -206,7 +206,7 @@ export class PrototypeHUD {
 
       <div class="hud-top-right">
         <button type="button" class="hud-panel hud-btn hud-btn-standalone" id="btn-collection">
-          ${i18n.t('hud.btn.collection')} <span class="hud-collection-badge" id="collection-count-badge">0/9</span>
+          ${i18n.t('hud.btn.collection')} <span class="hud-collection-badge" id="collection-count-badge">0/8</span>
         </button>
         <button type="button" class="hud-panel hud-btn hud-btn-standalone" id="btn-phone">
           ${i18n.t('hud.btn.phone')} <span class="hud-unread-badge hidden" id="phone-unread-badge">0</span>

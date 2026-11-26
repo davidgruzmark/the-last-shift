@@ -1,0 +1,33 @@
+{
+  "groupNameEn": "The Guys",
+  "groupNameHe": "החבר׳ה",
+  "members": [
+    {
+      "id": "david",
+      "nameEn": "David",
+      "nameHe": "דוד",
+      "bubbleColor": "#38bdf8",
+      "avatarInitialEn": "D",
+      "avatarInitialHe": "ד",
+      "notes": ""
+    },
+    {
+      "id": "mor",
+      "nameEn": "Mor",
+      "nameHe": "מור",
+      "bubbleColor": "#a78bfa",
+      "avatarInitialEn": "M",
+      "avatarInitialHe": "מ",
+      "notes": ""
+    },
+    {
+      "id": "lior",
+      "nameEn": "Lior",
+      "nameHe": "ליאור",
+      "bubbleColor": "#fbbf24",
+      "avatarInitialEn": "L",
+      "avatarInitialHe": "ל",
+      "notes": ""
+    }
+  ]
+}

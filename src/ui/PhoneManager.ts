@@ -1,13 +1,16 @@
+import { getFriendDisplayName, type FriendMemberId } from '../config/friendsProfiles';
 import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
 
-export type PhoneThreadId = 'shiran' | 'work';
+export type PhoneThreadId = 'shiran' | 'friends' | 'work';
 
 export interface PhoneMessage {
   id: string;
   threadId: PhoneThreadId;
   sender: string;
+  senderId?: FriendMemberId | 'kfir' | 'shiran' | 'manager' | 'system';
   senderKey?: string;
+  senderColor?: string;
   direction: 'incoming' | 'outgoing';
   text: string;
   textKey?: string;
@@ -52,9 +55,51 @@ const SHIRAN_MILESTONE_KEYS: Record<string, string> = {
   'm9-trigger': 'shiran.msg.m9',
 };
 
+export type GroupChatEventId =
+  | 'shift-start'
+  | 'm2-complete'
+  | 'm3-daytona'
+  | 'jimmy-choo-found'
+  | 'm6-complete';
+
+interface QueuedGroupMessage {
+  remainingSec: number;
+  memberId: FriendMemberId;
+  textKey: string;
+}
+
+const FRIENDS_BURST_SCRIPTS: Record<
+  GroupChatEventId,
+  Array<{ delaySec: number; memberId: FriendMemberId; textKey: string }>
+> = {
+  'shift-start': [
+    { delaySec: 3.5, memberId: 'david', textKey: 'friends.msg.shift1' },
+    { delaySec: 7.2, memberId: 'mor', textKey: 'friends.msg.shift2' },
+  ],
+  'm2-complete': [
+    { delaySec: 0, memberId: 'lior', textKey: 'friends.msg.m2_1' },
+    { delaySec: 3.4, memberId: 'david', textKey: 'friends.msg.m2_2' },
+  ],
+  'm3-daytona': [
+    { delaySec: 0, memberId: 'mor', textKey: 'friends.msg.m3_1' },
+    { delaySec: 3.2, memberId: 'david', textKey: 'friends.msg.m3_2' },
+    { delaySec: 6.5, memberId: 'lior', textKey: 'friends.msg.m3_3' },
+  ],
+  'jimmy-choo-found': [
+    { delaySec: 0, memberId: 'lior', textKey: 'friends.msg.jc1' },
+    { delaySec: 3.0, memberId: 'mor', textKey: 'friends.msg.jc2' },
+  ],
+  'm6-complete': [
+    { delaySec: 0, memberId: 'david', textKey: 'friends.msg.m6_1' },
+    { delaySec: 3.2, memberId: 'lior', textKey: 'friends.msg.m6_2' },
+    { delaySec: 6.4, memberId: 'mor', textKey: 'friends.msg.m6_3' },
+  ],
+};
+
 /**
- * In-game smartphone message manager supporting separated personal ('shiran')
- * and work ('work') threads, milestone-paced Shiran messages, and reusable Incoming Call UI.
+ * In-game smartphone message manager supporting separated personal ('shiran'),
+ * Friends Group Chat ('friends'), and work ('work') threads, milestone-paced bursts,
+ * and reusable Incoming Call UI.
  */
 export class PhoneManager {
   private messages: PhoneMessage[] = [];
@@ -62,6 +107,8 @@ export class PhoneManager {
   private open = false;
   private msgCounter = 0;
   private readonly sentMilestones = new Set<string>();
+  private readonly sentGroupEvents = new Set<string>();
+  private readonly pendingGroupQueue: QueuedGroupMessage[] = [];
   private activeCallOptions: IncomingCallOptions | null = null;
   private callStatus: 'ringing' | 'connected' | null = null;
   private readonly eventBus?: EventBus<GameEvents>;
@@ -120,7 +167,11 @@ export class PhoneManager {
       : this.messages;
     return filtered.map((m) => ({
       ...m,
-      sender: m.senderKey ? i18n.t(m.senderKey) : m.sender,
+      sender: m.senderId === 'david' || m.senderId === 'mor' || m.senderId === 'lior'
+        ? getFriendDisplayName(m.senderId)
+        : m.senderKey
+          ? i18n.t(m.senderKey)
+          : m.sender,
       text: m.textKey ? i18n.t(m.textKey) : m.text,
     }));
   }
@@ -139,11 +190,13 @@ export class PhoneManager {
     threadId: PhoneThreadId = sender.toUpperCase() === 'SHIRAN' ? 'shiran' : 'work',
     textKey?: string,
     senderKey?: string,
+    senderId?: PhoneMessage['senderId'],
   ): PhoneMessage {
     const msg: PhoneMessage = {
       id: `msg-${++this.msgCounter}`,
       threadId,
       sender,
+      senderId,
       senderKey,
       direction: 'incoming',
       text,
@@ -152,10 +205,69 @@ export class PhoneManager {
       read: this.open && this.activeThread === threadId,
     };
     this.messages.push(msg);
-    const displaySender = senderKey ? i18n.t(senderKey) : sender;
+    const displaySender =
+      senderId === 'david' || senderId === 'mor' || senderId === 'lior'
+        ? getFriendDisplayName(senderId)
+        : senderKey
+          ? i18n.t(senderKey)
+          : sender;
     const displayText = textKey ? i18n.t(textKey) : text;
     this.emitState(notify ? { sender: displaySender, text: displayText } : null);
     return { ...msg, sender: displaySender, text: displayText };
+  }
+
+  /**
+   * Queues a staggered burst of Friends Group Chat banter for a story milestone,
+   * delivering delaySec=0 items immediately and pacing subsequent replies via update(dt).
+   */
+  deliverFriendsMilestone(eventId: GroupChatEventId): void {
+    const script = FRIENDS_BURST_SCRIPTS[eventId];
+    if (!script || this.sentGroupEvents.has(eventId)) return;
+    this.sentGroupEvents.add(eventId);
+
+    for (const step of script) {
+      if (step.delaySec <= 0) {
+        this.deliverFriendLine(step.memberId, step.textKey);
+      } else {
+        this.pendingGroupQueue.push({
+          remainingSec: step.delaySec,
+          memberId: step.memberId,
+          textKey: step.textKey,
+        });
+      }
+    }
+  }
+
+  hasGroupEventSent(eventId: GroupChatEventId): boolean {
+    return this.sentGroupEvents.has(eventId);
+  }
+
+  /**
+   * Advances staggered group chat delivery timers cleanly in real time.
+   */
+  update(dt: number): void {
+    if (dt <= 0 || this.pendingGroupQueue.length === 0) return;
+    for (let i = this.pendingGroupQueue.length - 1; i >= 0; i--) {
+      this.pendingGroupQueue[i].remainingSec -= dt;
+      if (this.pendingGroupQueue[i].remainingSec <= 0) {
+        const ready = this.pendingGroupQueue.splice(i, 1)[0];
+        this.deliverFriendLine(ready.memberId, ready.textKey);
+      }
+    }
+  }
+
+  private deliverFriendLine(memberId: FriendMemberId, textKey: string): void {
+    const displayName = getFriendDisplayName(memberId);
+    this.receiveMessage(
+      displayName,
+      i18n.t(textKey),
+      this.formatNow(),
+      true,
+      'friends',
+      textKey,
+      undefined,
+      memberId,
+    );
   }
 
   /**

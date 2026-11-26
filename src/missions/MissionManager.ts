@@ -466,13 +466,18 @@ export class MissionManager {
       this.collectibles?.grantRewardItem(mission.reward.itemId, itemName);
     }
 
-    // Milestone-triggered Shiran updates (strictly routed to personal 'shiran' thread)
+    // Milestone-triggered Shiran & Friends Group Chat updates
     if (mission.id === 'mission-02') {
       this.phone.deliverShiranMilestone('m2-complete');
+      this.phone.deliverFriendsMilestone('m2-complete');
+    } else if (mission.id === 'mission-03') {
+      this.phone.deliverFriendsMilestone('m3-daytona');
     } else if (mission.id === 'mission-04') {
       this.phone.deliverShiranMilestone('m4-complete');
     } else if (mission.id === 'mission-05') {
       this.phone.deliverShiranMilestone('m5-complete');
+    } else if (mission.id === 'mission-06') {
+      this.phone.deliverFriendsMilestone('m6-complete');
     }
 
     const isCampaignEnd = this.missionIndex + 1 >= this.missions.length;

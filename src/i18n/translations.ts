@@ -151,15 +151,19 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
 
     // Smartphone & Incoming Call UI
     'phone.tab.shiran': 'Shiran',
+    'phone.tab.friends': 'Friends',
     'phone.tab.work': 'Work Alerts',
     'phone.contact.shiranName': 'SHIRAN',
     'phone.contact.shiranStatus': 'Online',
+    'phone.contact.friendsName': 'THE GUYS',
+    'phone.contact.friendsStatus': 'David, Mor, Lior, Kfir',
     'phone.contact.workName': 'IKEA SECURITY',
     'phone.contact.workStatus': 'Dispatch & Staff Alerts',
     'phone.close': 'Close',
     'phone.empty': 'No messages yet',
     'phone.today': 'Today',
     'phone.placeholder.shiran': 'Message Shiran...',
+    'phone.placeholder.friends': 'Message the group...',
     'phone.placeholder.work': 'Reply to Dispatch...',
     'phone.toast.newMessage': 'NEW MESSAGE · {sender}',
     'phone.toast.collected': 'ITEM COLLECTED ({collected}/{total})',
@@ -184,6 +188,20 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'shiran.msg.m5': 'Everything calm down over there? Let me know when you are close to wrapping up.',
     'shiran.msg.m7': 'Still at the store? Grab bread on your way back if a shop is open.',
     'shiran.msg.m9': 'When are you coming home?',
+
+    // Friends Group Chat Messages (Neutral story reactions — no invented backstories)
+    'friends.msg.shift1': 'Alive on the Rishon night shift?',
+    'friends.msg.shift2': 'If any meatballs are left in the restaurant keep a plate aside.',
+    'friends.msg.m2_1': 'A runaway flat-pack cart at IKEA? Only on your shift bro.',
+    'friends.msg.m2_2': 'Take it easy on those upstairs escalators.',
+    'friends.msg.m3_1': 'Hold on, someone actually stashed a Gold Rolex Daytona upstairs?',
+    'friends.msg.m3_2': 'Guard that watch with your life until handoff.',
+    'friends.msg.m3_3': 'If that disappears they will have you assembling BILLY shelves all year.',
+    'friends.msg.jc1': 'Wait why did my ears just ring right now?',
+    'friends.msg.jc2': 'Kfir just picked up Jimmy Choo Man in the warehouse lol.',
+    'friends.msg.m6_1': '1v1 FIFA in the Rishon parking lot after closing?! Respect.',
+    'friends.msg.m6_2': 'Next shift I am bringing boots, I got winner.',
+    'friends.msg.m6_3': 'Drop a photo of the scoreboard in the group.',
 
     // Collection Modal
     'collection.tag': 'KFIR PERSONAL ARCHIVE',
@@ -576,15 +594,19 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
 
     // Smartphone & Incoming Call UI
     'phone.tab.shiran': 'שירן',
+    'phone.tab.friends': 'החבר׳ה',
     'phone.tab.work': 'התראות עבודה',
     'phone.contact.shiranName': 'שירן',
     'phone.contact.shiranStatus': 'מחוברת',
+    'phone.contact.friendsName': 'החבר׳ה',
+    'phone.contact.friendsStatus': 'דוד, מור, ליאור, כפיר',
     'phone.contact.workName': 'אבטחת איקאה',
     'phone.contact.workStatus': 'מוקד ועדכוני צוות',
     'phone.close': 'סגור',
     'phone.empty': 'אין הודעות עדיין',
     'phone.today': 'היום',
     'phone.placeholder.shiran': 'הודעה לשירן...',
+    'phone.placeholder.friends': 'הודעה לקבוצה...',
     'phone.placeholder.work': 'תגובה למוקד...',
     'phone.toast.newMessage': 'הודעה חדשה · {sender}',
     'phone.toast.collected': 'נאסף פריט ({collected}/{total})',
@@ -609,6 +631,20 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'shiran.msg.m5': 'נרגע קצת בחנות? תעדכן כשאתה מתקרב לסיום.',
     'shiran.msg.m7': 'עדיין בחנות? תקנה לחם בדרך חזרה אם פתוח.',
     'shiran.msg.m9': 'מתי אתה חוזר הביתה?',
+
+    // Friends Group Chat Messages
+    'friends.msg.shift1': 'עוד שורד את משמרת הלילה בראשון?',
+    'friends.msg.shift2': 'אם נשארו קציצות במסעדה שמור לנו בצד.',
+    'friends.msg.m2_1': 'עגלת קרטונים דוהרת באיקאה? רק במשמרת שלך אחי.',
+    'friends.msg.m2_2': 'תיזהר שם במדרגות הנעות למעלה.',
+    'friends.msg.m3_1': 'רגע, באמת החביאו לך רולקס דייטונה מזהב למעלה?',
+    'friends.msg.m3_2': 'שמור על השעון הזה בעיניים עד המסירה.',
+    'friends.msg.m3_3': 'אם זה נעלם מושיבים אותך להרכיב ארונות BILLY כל השנה.',
+    'friends.msg.jc1': 'הלו למה פתאום קפץ לי השם באוזניים?',
+    'friends.msg.jc2': 'כפיר מצא הרגע ג׳ימי צ׳ו מן במחסן חחח.',
+    'friends.msg.m6_1': 'פיפ״א 1 על 1 בחניון של ראשון אחרי סגירה?! כבוד.',
+    'friends.msg.m6_2': 'משמרת הבאה אני מביא נעליים, תופס את המנצח.',
+    'friends.msg.m6_3': 'זרוק צילום של לוח התוצאות בקבוצה.',
 
     // Collection Modal
     'collection.tag': 'הארכיון האישי של כפיר',

@@ -1,3 +1,4 @@
+import { getFriendProfile, type FriendMemberId } from '../config/friendsProfiles';
 import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
 import {
@@ -50,6 +51,7 @@ export class InteractionUI {
   private cctvTimestampEl!: HTMLElement;
   private phoneEl!: HTMLElement;
   private phoneTabShiranEl!: HTMLButtonElement;
+  private phoneTabFriendsEl!: HTMLButtonElement;
   private phoneTabWorkEl!: HTMLButtonElement;
   private phoneAvatarEl!: HTMLElement;
   private phoneContactNameEl!: HTMLElement;
@@ -175,6 +177,7 @@ export class InteractionUI {
 
             <div class="phone-thread-tabs" role="tablist" aria-label="Conversations">
               <button type="button" class="phone-thread-tab active" id="phone-tab-shiran" role="tab"></button>
+              <button type="button" class="phone-thread-tab" id="phone-tab-friends" role="tab"></button>
               <button type="button" class="phone-thread-tab" id="phone-tab-work" role="tab"></button>
             </div>
 
@@ -217,6 +220,7 @@ export class InteractionUI {
     this.camFeedEl = this.container.querySelector('#terminal-cam-feed')!;
     this.phoneEl = this.container.querySelector('#phone-panel')!;
     this.phoneTabShiranEl = this.container.querySelector('#phone-tab-shiran')!;
+    this.phoneTabFriendsEl = this.container.querySelector('#phone-tab-friends')!;
     this.phoneTabWorkEl = this.container.querySelector('#phone-tab-work')!;
     this.phoneAvatarEl = this.container.querySelector('#phone-avatar-letter')!;
     this.phoneContactNameEl = this.container.querySelector('#phone-contact-name')!;
@@ -228,6 +232,7 @@ export class InteractionUI {
     this.callOverlayEl = this.container.querySelector('#phone-call-overlay')!;
 
     this.phoneTabShiranEl.addEventListener('click', () => this.phone.setActiveThread('shiran'));
+    this.phoneTabFriendsEl.addEventListener('click', () => this.phone.setActiveThread('friends'));
     this.phoneTabWorkEl.addEventListener('click', () => this.phone.setActiveThread('work'));
 
     this.dialogueNextBtnEl.addEventListener('click', () => this.dialogue.advance());
@@ -422,23 +427,47 @@ export class InteractionUI {
   private renderPhoneMessages(): void {
     const activeThread = this.phone.getActiveThread();
     const isShiran = activeThread === 'shiran';
+    const isFriends = activeThread === 'friends';
+
     this.phoneTabShiranEl.classList.toggle('active', isShiran);
-    this.phoneTabWorkEl.classList.toggle('active', !isShiran);
-    this.phoneTabShiranEl.textContent = i18n.t('phone.tab.shiran');
+    this.phoneTabFriendsEl.classList.toggle('active', isFriends);
+    this.phoneTabWorkEl.classList.toggle('active', activeThread === 'work');
+
+    const shiranUnread = this.phone.getUnreadCount('shiran');
+    this.phoneTabShiranEl.innerHTML = `${escapeHtml(i18n.t('phone.tab.shiran'))} <span class="phone-tab-badge ${shiranUnread <= 0 ? 'hidden' : ''}" id="phone-shiran-unread">${shiranUnread}</span>`;
+
+    const friendsUnread = this.phone.getUnreadCount('friends');
+    this.phoneTabFriendsEl.innerHTML = `${escapeHtml(i18n.t('phone.tab.friends'))} <span class="phone-tab-badge ${friendsUnread <= 0 ? 'hidden' : ''}" id="phone-friends-unread">${friendsUnread}</span>`;
 
     const workUnread = this.phone.getUnreadCount('work');
     this.phoneTabWorkEl.innerHTML = `${escapeHtml(i18n.t('phone.tab.work'))} <span class="phone-tab-badge ${workUnread <= 0 ? 'hidden' : ''}" id="phone-work-unread">${workUnread}</span>`;
 
-    this.phoneAvatarEl.textContent = isShiran ? (i18n.isRtl() ? 'ש' : 'S') : i18n.isRtl() ? 'א' : 'I';
+    this.phoneAvatarEl.textContent = isShiran
+      ? i18n.isRtl()
+        ? 'ש'
+        : 'S'
+      : isFriends
+        ? i18n.isRtl()
+          ? 'ח'
+          : 'G'
+        : i18n.isRtl()
+          ? 'א'
+          : 'I';
     this.phoneContactNameEl.textContent = isShiran
       ? i18n.t('phone.contact.shiranName')
-      : i18n.t('phone.contact.workName');
+      : isFriends
+        ? i18n.t('phone.contact.friendsName')
+        : i18n.t('phone.contact.workName');
     this.phoneContactStatusEl.textContent = isShiran
       ? i18n.t('phone.contact.shiranStatus')
-      : i18n.t('phone.contact.workStatus');
+      : isFriends
+        ? i18n.t('phone.contact.friendsStatus')
+        : i18n.t('phone.contact.workStatus');
     this.phoneInputEl.placeholder = isShiran
       ? i18n.t('phone.placeholder.shiran')
-      : i18n.t('phone.placeholder.work');
+      : isFriends
+        ? i18n.t('phone.placeholder.friends')
+        : i18n.t('phone.placeholder.work');
 
     const messages = this.phone.getMessages(activeThread);
     if (messages.length === 0) {
@@ -457,9 +486,11 @@ export class InteractionUI {
       .map((m, i) => {
         const isOut = m.direction === 'outgoing';
         const animateClass = shouldAnimateLast && i === messages.length - 1 ? 'msg-pop-in' : '';
+        const profile = m.senderId ? getFriendProfile(m.senderId as FriendMemberId) : undefined;
+        const senderColorStyle = profile ? ` style="color: ${escapeHtml(profile.bubbleColor)}"` : '';
         const senderLabel =
           !isOut && !isShiran
-            ? `<div class="chat-sender-tag">${escapeHtml(m.sender)}</div>`
+            ? `<div class="chat-sender-tag"${senderColorStyle}>${escapeHtml(m.sender)}</div>`
             : '';
         return `
           <div class="chat-row ${isOut ? 'chat-row-out' : 'chat-row-in'} ${animateClass}">
