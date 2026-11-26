@@ -17,18 +17,21 @@ import type { Interactable } from '../interaction/Interactable';
 import type { InteractionManager } from '../interaction/InteractionManager';
 import type { MissionManager } from '../missions/MissionManager';
 import type { CollisionManager } from '../world/CollisionManager';
+import { WORLD_ANCHORS } from '../world/WorldAnchors';
+
+const PITCH_CENTER = WORLD_ANCHORS.parking.miniPitchCenter.position;
 
 export const FOOTBALL_PITCH_BOUNDS = {
-  minX: 18.5,
-  maxX: 28.5,
-  minZ: 38.0,
-  maxZ: 50.0,
-  centerX: 23.5,
-  centerZ: 44.0,
+  minX: PITCH_CENTER.x - 5.0,
+  maxX: PITCH_CENTER.x + 5.0,
+  minZ: PITCH_CENTER.z - 6.0,
+  maxZ: PITCH_CENTER.z + 6.0,
+  centerX: PITCH_CENTER.x,
+  centerZ: PITCH_CENTER.z,
   goalWidth: 3.2,
   goalHeight: 1.65,
-  opponentGoalZ: 38.0,
-  kfirGoalZ: 50.0,
+  opponentGoalZ: PITCH_CENTER.z - 6.0,
+  kfirGoalZ: PITCH_CENTER.z + 6.0,
 } as const;
 
 export const FOOTBALL_MATCH_DURATION = 60;

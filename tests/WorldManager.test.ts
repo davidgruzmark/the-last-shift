@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
-import { PLAYER_CONFIG } from '../src/config/constants';
+import { PLAYER_CONFIG, WORLD_ZONES } from '../src/config/constants';
 import { AssetManager } from '../src/core/AssetManager';
 import type { InputState } from '../src/core/InputManager';
 import { PlayerController } from '../src/player/PlayerController';
@@ -62,12 +62,12 @@ describe('WorldManager & Two-Floor Store (Stage 2B.3)', () => {
     expect(p2.position.z).toBeLessThan(-16.0);
     expect(world.getZoneAt(p2.position, p2.getFloorState().committedFloor)).toBe('Warehouse');
 
-    // 3. Walk South from Market Hall West aisle (x=18.2, z=11) through Checkout into Parking Lot
-    const p3 = new PlayerController(new THREE.Vector3(18.2, 0, 11), collision);
+    // 3. Walk South from Market Hall (x=19.5, z=11 -> z>25.8) through Checkout & between Entrance Bollards into Parking Lot
+    const p3 = new PlayerController(new THREE.Vector3(19.5, 0, 11), collision);
     for (let i = 0; i < 160; i++) {
       p3.update(1 / 60, makeInput({ moveZ: 1, sprint: true }), Math.PI);
     }
-    expect(p3.position.z).toBeGreaterThan(25.0);
+    expect(p3.position.z).toBeGreaterThan(25.8);
     expect(world.getZoneAt(p3.position, p3.getFloorState().committedFloor)).toBe('Parking Lot');
   });
 
@@ -125,10 +125,11 @@ describe('WorldManager & Two-Floor Store (Stage 2B.3)', () => {
     const collision = new CollisionManager();
     new WorldManager(assets, collision);
 
-    const player = new PlayerController(new THREE.Vector3(21, 0, 49), collision);
+    const maxZ = WORLD_ZONES.parkingLot.maxZ;
+    const player = new PlayerController(new THREE.Vector3(21, 0, maxZ - 3), collision);
     for (let i = 0; i < 90; i++) {
       player.update(1 / 60, makeInput({ moveZ: 1, sprint: true }), Math.PI);
     }
-    expect(player.position.z).toBeLessThanOrEqual(52 - PLAYER_CONFIG.radius + 0.01);
+    expect(player.position.z).toBeLessThanOrEqual(maxZ - PLAYER_CONFIG.radius + 0.01);
   });
 });

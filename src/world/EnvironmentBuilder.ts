@@ -604,10 +604,10 @@ function buildParkingLot(
   const group = new THREE.Group();
   group.name = 'OutdoorParkingLot';
   const { minX, maxX, minZ, maxZ } = WORLD_ZONES.parkingLot;
-  const w = maxX - minX; // 58
-  const d = maxZ - minZ; // 28
-  const cx = (minX + maxX) / 2; // 17
-  const cz = (minZ + maxZ) / 2; // 38
+  const w = maxX - minX; // 74 (x [-18..56])
+  const d = maxZ - minZ; // 50 (z [24..74])
+  const cx = (minX + maxX) / 2; // 19
+  const cz = (minZ + maxZ) / 2; // 49
 
   addBox(group, collision, 'parking-asphalt', cx, -0.5, cz, w, 1.0, d, palette.asphalt, {
     castShadow: false,
@@ -620,7 +620,7 @@ function buildParkingLot(
   sidewalk.receiveShadow = true;
   group.add(sidewalk);
 
-  // Iconic IKEA Store Exterior Facade (crowned above two-story roof height 10.6)
+  // Iconic IKEA Rishon LeZion Facade + Upper Floor 2 Glazed Curtain Windows
   const yellowBand = new THREE.Mesh(new THREE.BoxGeometry(38.6, 0.44, 0.36), palette.ikeaYellow);
   yellowBand.position.set(26, 10.82, minZ + 0.15);
   group.add(yellowBand);
@@ -630,65 +630,151 @@ function buildParkingLot(
   facadeTop.castShadow = true;
   group.add(facadeTop);
 
-  const logoSign = new THREE.Mesh(new THREE.BoxGeometry(9.6, 2.5, 0.18), palette.ikeaFacadeLogo);
+  // Upper floor architectural curtain glass spans flanking entrance canopy
+  [
+    { x: 12.5, w: 7.4 },
+    { x: 34.5, w: 15.0 },
+  ].forEach((win) => {
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(win.w + 0.3, 3.4, 0.12), palette.metalDark);
+    frame.position.set(win.x, 7.8, minZ + 0.24);
+    const pane = new THREE.Mesh(new THREE.BoxGeometry(win.w, 3.1, 0.08), palette.glass);
+    pane.position.set(win.x, 7.8, minZ + 0.29);
+    group.add(frame, pane);
+  });
+
+  const logoSign = new THREE.Mesh(new THREE.BoxGeometry(10.4, 2.5, 0.18), palette.ikeaFacadeLogo);
   logoSign.position.set(21, 12.4, minZ + 0.43);
   group.add(logoSign);
 
-  // Entrance canopy
-  const canopy = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.26, 2.8), palette.ikeaYellow);
-  canopy.position.set(21, 3.7, minZ + 1.4);
+  // Main Entrance canopy
+  const canopy = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.28, 3.1), palette.ikeaYellow);
+  canopy.position.set(21, 3.7, minZ + 1.5);
   canopy.castShadow = true;
   group.add(canopy);
 
-  // InstancedMesh for painted parking bay lines
-  const bayXs = [-4, 0, 4, 8, 12, 28, 32, 36, 40];
+  // Steel safety bollards across Main Entrance (z = 25.0): passable on foot (gaps ~1.45m), impassable by cars
+  [18.8, 20.25, 21.75, 23.2].forEach((bx, i) => {
+    addBox(group, collision, `entrance-bollard-${i}`, bx, 0.45, 25.0, 0.28, 0.9, 0.28, palette.metalGrey);
+    const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.16, 10), palette.ikeaYellow);
+    tip.position.set(bx, 0.92, 25.0);
+    group.add(tip);
+  });
+
+  // InstancedMesh for painted parking bay lines (Row A z=33.5, Row B z=43.0 west, Row C z=54.5 west — leaves [29..39, 42..54] open for Football Pitch)
+  const rowABays = [-4, 0, 4, 8, 12, 16, 28, 32, 36, 40];
+  const rowBaysWest = [-4, 0, 4, 8, 12, 16, 20, 24];
+  const lineEntries: Array<{ x: number; z: number }> = [];
+  rowABays.forEach((x) => lineEntries.push({ x, z: 33.5 }));
+  rowBaysWest.forEach((x) => {
+    lineEntries.push({ x, z: 43.0 });
+    lineEntries.push({ x, z: 54.5 });
+  });
+
   const lineGeo = new THREE.BoxGeometry(0.16, 0.02, 5.2);
-  const lineMesh = new THREE.InstancedMesh(lineGeo, palette.parkingLine, bayXs.length * 2);
+  const lineMesh = new THREE.InstancedMesh(lineGeo, palette.parkingLine, lineEntries.length);
   lineMesh.receiveShadow = true;
   const dummy = new THREE.Object3D();
-  let idx = 0;
-  [33.5, 43.5].forEach((z) => {
-    bayXs.forEach((x) => {
-      dummy.position.set(x, 0.015, z);
-      dummy.updateMatrix();
-      lineMesh.setMatrixAt(idx++, dummy.matrix);
-    });
+  lineEntries.forEach((b, i) => {
+    dummy.position.set(b.x, 0.015, b.z);
+    dummy.scale.set(1, 1, 1);
+    dummy.rotation.set(0, 0, 0);
+    dummy.updateMatrix();
+    lineMesh.setMatrixAt(i, dummy.matrix);
   });
   lineMesh.instanceMatrix.needsUpdate = true;
   group.add(lineMesh);
 
+  // Connected 2-Lane Access Road Loop (South boulevard z [62..72], West lane x [-16..-9], East lane x [47..54])
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x262b33, roughness: 0.88, flatShading: true });
+  const southRoad = new THREE.Mesh(new THREE.BoxGeometry(70, 0.014, 10), roadMat);
+  southRoad.position.set(19, 0.008, 67.0);
+  southRoad.receiveShadow = true;
+  const westRoad = new THREE.Mesh(new THREE.BoxGeometry(7, 0.014, 42), roadMat);
+  westRoad.position.set(-12.5, 0.008, 45.0);
+  westRoad.receiveShadow = true;
+  const eastRoad = new THREE.Mesh(new THREE.BoxGeometry(7, 0.014, 42), roadMat);
+  eastRoad.position.set(50.5, 0.008, 45.0);
+  eastRoad.receiveShadow = true;
+  group.add(southRoad, westRoad, eastRoad);
+
+  // Dashed yellow centerline markings along 2-lane loop (InstancedMesh)
+  const dashGeoX = new THREE.BoxGeometry(2.6, 0.02, 0.18);
+  const southDashes = new THREE.InstancedMesh(dashGeoX, palette.ikeaYellow, 11);
+  for (let i = 0; i < 11; i++) {
+    dummy.position.set(-11 + i * 6.0, 0.02, 67.0);
+    dummy.scale.set(1, 1, 1);
+    dummy.rotation.set(0, 0, 0);
+    dummy.updateMatrix();
+    southDashes.setMatrixAt(i, dummy.matrix);
+  }
+  southDashes.instanceMatrix.needsUpdate = true;
+
+  const dashGeoZ = new THREE.BoxGeometry(0.18, 0.02, 2.6);
+  const sideDashes = new THREE.InstancedMesh(dashGeoZ, palette.ikeaYellow, 14);
+  for (let i = 0; i < 7; i++) {
+    const zPos = 29.0 + i * 5.8;
+    dummy.position.set(-12.5, 0.02, zPos);
+    dummy.updateMatrix();
+    sideDashes.setMatrixAt(i, dummy.matrix);
+
+    dummy.position.set(50.5, 0.02, zPos);
+    dummy.updateMatrix();
+    sideDashes.setMatrixAt(7 + i, dummy.matrix);
+  }
+  sideDashes.instanceMatrix.needsUpdate = true;
+  group.add(southDashes, sideDashes);
+
+  // Concrete median islands between Parking Lot and South Access Road (wide driveways open at x [2..20.5] & [28.5..37])
+  [
+    { id: 'road-curb-sw', x: -2.0, w: 8.0 },
+    { id: 'road-curb-sc', x: 24.5, w: 8.0 },
+    { id: 'road-curb-se', x: 41.5, w: 9.0 },
+  ].forEach((c) => {
+    addBox(group, collision, c.id, c.x, 0.09, 61.5, c.w, 0.18, 0.7, palette.sidewalk, {
+      castShadow: false,
+      blocksCamera: false,
+    });
+  });
+
+  // Parked Low-Poly Customer Cars (Kfir's personal car spawns at 14, 0, 33.5; central z=46..51 promenade kept open)
   placeProp(group, collision, 'car-2', createParkedCar(palette, palette.carColors[1]), 2.0, 33.5, Math.PI);
   placeProp(group, collision, 'car-3', createParkedCar(palette, palette.carColors[2]), 30.0, 33.5, 0);
   placeProp(group, collision, 'car-4', createParkedCar(palette, palette.carColors[3]), 38.0, 33.5, Math.PI);
-  placeProp(group, collision, 'car-5', createParkedCar(palette, palette.carColors[4]), 6.0, 43.5, 0);
-  placeProp(group, collision, 'car-6', createParkedCar(palette, palette.carColors[5]), 34.0, 43.5, Math.PI);
+  placeProp(group, collision, 'car-5', createParkedCar(palette, palette.carColors[4]), 2.0, 55.0, 0);
+  placeProp(group, collision, 'car-6', createParkedCar(palette, palette.carColors[5]), 14.0, 55.0, Math.PI);
+  placeProp(group, collision, 'car-7', createParkedCar(palette, palette.carColors[1]), 22.0, 55.0, 0);
 
+  // Parking & Boulevard Street Lamps
   [0, 17, 34].forEach((x, i) => {
     placeProp(group, collision, `lamp-${i}`, createStreetLamp(palette), x, 38.5, 0);
   });
+  [-6, 16, 40].forEach((x, i) => {
+    placeProp(group, collision, `road-lamp-${i}`, createStreetLamp(palette), x, 61.5, Math.PI);
+  });
 
+  // Landscaping trees around outer verge
   [
-    [-9.5, 26.5],
-    [-9.5, 36.0],
-    [-9.5, 46.5],
-    [43.5, 26.5],
-    [43.5, 36.0],
-    [43.5, 46.5],
+    [-16.8, 28.0],
+    [-16.8, 46.0],
+    [-16.8, 62.0],
+    [54.8, 28.0],
+    [54.8, 46.0],
+    [54.8, 62.0],
   ].forEach(([x, z], i) => {
     placeProp(group, collision, `tree-${i}`, createLowPolyTree(palette), x, z, i * 0.7);
   });
 
-  const grassStrip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, 2.2), palette.grass);
-  grassStrip.position.set(cx, 0.03, maxZ - 1.1);
+  const grassStrip = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, 1.8), palette.grass);
+  grassStrip.position.set(cx, 0.03, maxZ - 0.9);
   grassStrip.receiveShadow = true;
   group.add(grassStrip);
 
   addBox(group, collision, 'parking-bound-s', cx, 1.5, maxZ + 0.25, w, 3, 0.5, palette.metalDark);
   addBox(group, collision, 'parking-bound-w', minX - 0.25, 1.5, cz, 0.5, 3, d, palette.metalDark);
   addBox(group, collision, 'parking-bound-e', maxX + 0.25, 1.5, cz, 0.5, 3, d, palette.metalDark);
-  // North boundary wings flanking store building (x < 7 and x > 45 at z = 24)
-  addBox(group, collision, 'parking-bound-nw', -2.5, 1.5, minZ - 0.25, 19, 3, 0.5, palette.grass);
-  addBox(group, collision, 'parking-bound-ne', 45.5, 1.5, minZ - 0.25, 1.0, 3, 0.5, palette.grass);
+  // North boundary wings outside store building (x < 7 and x > 45 at z = 24)
+  addBox(group, collision, 'parking-bound-nw', -5.5, 1.5, minZ - 0.25, 25, 3, 0.5, palette.grass);
+  addBox(group, collision, 'parking-bound-ne', 50.5, 1.5, minZ - 0.25, 11, 3, 0.5, palette.grass);
 
   root.add(group);
 }

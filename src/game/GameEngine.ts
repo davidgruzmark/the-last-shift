@@ -38,6 +38,7 @@ import { PrototypeHUD } from '../ui/PrototypeHUD';
 import { SettingsUI } from '../ui/SettingsUI';
 import { VehicleManager } from '../vehicles/VehicleManager';
 import { CollisionManager } from '../world/CollisionManager';
+import { WORLD_ANCHORS } from '../world/WorldAnchors';
 import { WorldManager } from '../world/WorldManager';
 import { WorldProgressionManager } from '../world/WorldProgressionManager';
 import { createInitialGameState, type GameState } from './GameState';
@@ -262,8 +263,8 @@ export class GameEngine {
     const kfirCar = this.vehicleManager.spawnVehicle({
       id: 'car-kfir',
       name: 'Car',
-      position: new THREE.Vector3(14.0, 0, 33.5),
-      yaw: 0,
+      position: WORLD_ANCHORS.parking.kfirCar.position.clone(),
+      yaw: WORLD_ANCHORS.parking.kfirCar.facingYaw ?? 0,
       bodyMat: this.worldManager.palette.carColors[0],
     });
     this.scene.add(kfirCar.rig.root);

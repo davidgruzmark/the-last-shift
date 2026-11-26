@@ -93,10 +93,15 @@ describe('Phase 6.3 FIFA at IKEA Football Mini-Game (Mission 06)', () => {
 
     // Continue -> campaign complete & permanent Parking Lot free-play mode active!
     mm.continueAfterCompletion();
-    football.update(0.016, new THREE.Vector3(23.5, 0, 45.0), new THREE.Vector3());
+    const freeplaySpot = new THREE.Vector3(
+      FOOTBALL_PITCH_BOUNDS.centerX,
+      0,
+      FOOTBALL_PITCH_BOUNDS.centerZ + 1.0,
+    );
+    football.update(0.016, freeplaySpot, new THREE.Vector3());
     expect(football.getSnapshot().mode).toBe('freeplay');
     expect(
-      football.pass(new THREE.Vector3(23.5, 0, 45.0), new THREE.Vector3(0, 0, -1)),
+      football.pass(freeplaySpot, new THREE.Vector3(0, 0, -1)),
     ).toBe(true);
   });
 
@@ -130,11 +135,15 @@ describe('Phase 6.3 FIFA at IKEA Football Mini-Game (Mission 06)', () => {
     expect(football.ballVelocity.x).toBeLessThan(0);
 
     // Run match timer down cleanly to 0 -> draw ends match without softlocking, rematch resets cleanly
-    football.opponentPosition.set(20, 0, 40);
-    football.ballPosition.set(20, 0.24, 48);
+    football.opponentPosition.set(FOOTBALL_PITCH_BOUNDS.minX + 1.5, 0, FOOTBALL_PITCH_BOUNDS.minZ + 2.0);
+    football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.minX + 1.5, 0.24, FOOTBALL_PITCH_BOUNDS.maxZ - 2.0);
     football.ballVelocity.set(0, 0, 0);
     for (let i = 0; i < FOOTBALL_MATCH_DURATION + 2; i++) {
-      football.update(1.0, new THREE.Vector3(20, 0, 40), new THREE.Vector3());
+      football.update(
+        1.0,
+        new THREE.Vector3(FOOTBALL_PITCH_BOUNDS.minX + 1.5, 0, FOOTBALL_PITCH_BOUNDS.minZ + 2.0),
+        new THREE.Vector3(),
+      );
     }
     expect(football.getSnapshot().phase).toBe('ended');
     expect(football.getSnapshot().winner).not.toBe('kfir');
@@ -173,17 +182,22 @@ describe('Phase 6.3 FIFA at IKEA Football Mini-Game (Mission 06)', () => {
 
     // Restart match, verify defend state when ball moves into South half, then place ball near Yossi -> shoots South (+Z)
     football.restartMatch();
+    const kfirCenter = new THREE.Vector3(
+      FOOTBALL_PITCH_BOUNDS.centerX + 1.0,
+      0,
+      FOOTBALL_PITCH_BOUNDS.centerZ + 4.0,
+    );
     for (let i = 0; i < 24; i++) {
       football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.maxX - 1.2, 0.24, FOOTBALL_PITCH_BOUNDS.kfirGoalZ - 2.0);
       football.ballVelocity.set(0, 0, 3.2);
-      football.update(0.05, new THREE.Vector3(24.5, 0, 48.0), new THREE.Vector3());
+      football.update(0.05, kfirCenter, new THREE.Vector3());
     }
     expect(football.getOpponentAIState()).toBe('defend');
 
     football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.opponentGoalZ + 2.6);
     football.ballVelocity.set(0, 0, 0);
     football.opponentPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0, FOOTBALL_PITCH_BOUNDS.opponentGoalZ + 2.0);
-    football.update(0.016, new THREE.Vector3(24.5, 0, 48.0), new THREE.Vector3());
+    football.update(0.016, kfirCenter, new THREE.Vector3());
     expect(football.getOpponentAIState()).toBe('shoot');
     expect(football.ballVelocity.z).toBeGreaterThan(6);
 
@@ -194,19 +208,20 @@ describe('Phase 6.3 FIFA at IKEA Football Mini-Game (Mission 06)', () => {
       { name: 'SE', x: FOOTBALL_PITCH_BOUNDS.maxX - 0.28, z: FOOTBALL_PITCH_BOUNDS.maxZ - 0.28 },
       { name: 'SW', x: FOOTBALL_PITCH_BOUNDS.minX + 0.28, z: FOOTBALL_PITCH_BOUNDS.maxZ - 0.28 },
     ];
+    const idleKfir = new THREE.Vector3(FOOTBALL_PITCH_BOUNDS.centerX, 0, FOOTBALL_PITCH_BOUNDS.centerZ);
     for (const c of corners) {
       football.restartMatch();
       for (let i = 0; i < 24; i++) {
         football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.kfirGoalZ - 2.0);
         football.ballVelocity.set(0, 0, 3.2);
-        football.update(0.05, new THREE.Vector3(23.5, 0, 44.0), new THREE.Vector3());
+        football.update(0.05, idleKfir, new THREE.Vector3());
       }
       football.ballPosition.set(c.x, 0.24, c.z);
       football.ballVelocity.set(0, 0, 0);
 
       let kicked = false;
       for (let i = 0; i < 70; i++) {
-        football.update(0.05, new THREE.Vector3(23.5, 0, 44.0), new THREE.Vector3());
+        football.update(0.05, idleKfir, new THREE.Vector3());
         if (football.getOpponentAIState() === 'shoot') {
           kicked = true;
         }

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { createKfirModel } from '../src/assets/characters/KfirModel';
 import { createPalette } from '../src/assets/materials/Palette';
-import { PLAYER_CONFIG } from '../src/config/constants';
+import { PLAYER_CONFIG, WORLD_ZONES } from '../src/config/constants';
 import { AssetManager } from '../src/core/AssetManager';
 import { EventBus, type GameEvents } from '../src/core/EventBus';
 import type { InputState } from '../src/core/InputManager';
@@ -136,22 +136,35 @@ describe('Phase 5 Vehicle System', () => {
     expect(car.rig.headlightBeams.visible).toBe(true);
   });
 
-  it('collides solidly with Parking Lot perimeter walls and parked cars without teleporting or falling', () => {
-    const { manager, car } = setupWorldAndCar(new THREE.Vector3(21.0, 0, 44.0), 0);
+  it('collides solidly with Parking Lot perimeter walls, entrance safety bollards, and parked cars without teleporting or falling', () => {
+    const { minX, maxZ } = WORLD_ZONES.parkingLot;
+    const { manager, car } = setupWorldAndCar(new THREE.Vector3(21.0, 0, maxZ - 8.0), 0);
     manager.enterVehicle(car);
     for (let i = 0; i < 20; i++) manager.updateDriving(1 / 60, makeInput(), true);
 
-    // Drive straight South (+Z) into parking-bound-s at z = 52
+    // Drive straight South (+Z) into parking-bound-s at z = WORLD_ZONES.parkingLot.maxZ
     for (let i = 0; i < 240; i++) {
       manager.updateDriving(1 / 60, makeInput({ moveZ: 1, sprint: true }), true);
     }
-    expect(car.position.z).toBeLessThanOrEqual(52.0 - car.rig.halfExtents.z + 0.35);
+    expect(car.position.z).toBeLessThanOrEqual(maxZ - car.rig.halfExtents.z + 0.35);
     expect(car.position.y).toBe(0);
+
+    // Entrance steel bollards at z = 25.0 must block Kfir's Car from driving North inside Checkout Hall
+    car.position.set(21.0, 0, 29.0);
+    car.yaw = Math.PI;
+    for (let i = 0; i < 120; i++) {
+      manager.updateDriving(1 / 60, makeInput({ moveZ: 1, sprint: true }), true);
+    }
+    expect(car.position.z).toBeGreaterThanOrEqual(25.0);
+
+    // Verify clean driving across West wall (minX = -18)
+    expect(minX).toBe(-18);
   });
 
   it('prevents high-speed exits, selects clear exit sides near walls, and supports repeated enter/exit', () => {
+    const { minX } = WORLD_ZONES.parkingLot;
     const { manager, car, player, kfirRig, bus } = setupWorldAndCar(
-      new THREE.Vector3(-10.1, 0, 35.0),
+      new THREE.Vector3(minX + 1.9, 0, 35.0),
       0,
     );
     const notices: string[] = [];
@@ -180,8 +193,8 @@ describe('Phase 5 Vehicle System', () => {
     expect(manager.tryExit()).toBe(true);
     for (let i = 0; i < 20; i++) manager.updateDriving(1 / 60, makeInput(), false);
     expect(manager.isInVehicle()).toBe(false);
-    // Exited on clear passenger/open side away from x = -12 wall, standing safely on ground
-    expect(player.position.x).toBeGreaterThan(-12 + PLAYER_CONFIG.radius);
+    // Exited on clear passenger/open side away from West wall, standing safely on ground
+    expect(player.position.x).toBeGreaterThan(minX + PLAYER_CONFIG.radius);
     expect(player.position.y).toBe(0);
     expect(kfirRig.hips.position.y).toBe(0);
 

@@ -107,8 +107,8 @@ export const WORLD_ANCHORS = {
   },
   parking: {
     kfirCar: anchor('parking.kfirCar', 14.0, 0, 33.5, 1, 'Parking Lot', 0),
-    miniPitchCenter: anchor('parking.miniPitchCenter', 23.5, 0, 44.0, 1, 'Parking Lot'),
-    legendaryWatch: anchor('parking.legendaryWatch', 39.2, 0, 28.5, 1, 'Parking Lot'),
+    miniPitchCenter: anchor('parking.miniPitchCenter', 34.0, 0, 48.0, 1, 'Parking Lot'),
+    legendaryWatch: anchor('parking.legendaryWatch', 43.2, 0, 30.5, 1, 'Parking Lot'),
   },
 } as const;
 

@@ -53,7 +53,7 @@ export const WORLD_ZONES = {
   restaurant: { minX: 30.5, maxX: 45, minZ: -14, maxZ: 1.8 },
   warehouse: { minX: 7, maxX: 45, minZ: -44, maxZ: -14, height: 9.0 },
   checkout: { minX: 7, maxX: 45, minZ: 14, maxZ: 24, height: 5.8 },
-  parkingLot: { minX: -12, maxX: 46, minZ: 24, maxZ: 52 },
+  parkingLot: { minX: -18, maxX: 56, minZ: 24, maxZ: 74 },
 } as const;
 
 export const PLAYER_CONFIG = {
