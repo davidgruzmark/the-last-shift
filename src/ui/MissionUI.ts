@@ -58,8 +58,10 @@ export class MissionUI {
     const deg = (nav.angleRad * 180) / Math.PI;
     const arrowEl = this.navIndicatorEl.querySelector<HTMLElement>('.nav-arrow')!;
     const distEl = this.navIndicatorEl.querySelector<HTMLElement>('.nav-dist')!;
+    arrowEl.style.display = nav.offScreen ? '' : 'none';
     arrowEl.style.transform = `rotate(${deg}deg)`;
-    distEl.textContent = `${Math.round(nav.distanceMeters)}m`;
+    const vBadge = nav.verticalHint === 'up' ? ' ▲' : nav.verticalHint === 'down' ? ' ▼' : '';
+    distEl.textContent = `${Math.round(nav.distanceMeters)}m${vBadge}`;
   }
 
   dispose(): void {

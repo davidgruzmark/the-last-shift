@@ -7,6 +7,7 @@ export interface ScreenNavState {
   y: number;
   angleRad: number;
   distanceMeters: number;
+  verticalHint: 'same' | 'up' | 'down';
 }
 
 /**
@@ -55,7 +56,7 @@ export class ObjectiveMarker {
       return;
     }
     this.targetPos = pos.clone();
-    this.group.position.set(pos.x, 0, pos.z);
+    this.group.position.set(pos.x, pos.y, pos.z);
     this.group.visible = true;
   }
 
@@ -75,9 +76,19 @@ export class ObjectiveMarker {
     viewportH: number,
   ): ScreenNavState {
     if (!this.targetPos || viewportW <= 0 || viewportH <= 0) {
-      return { visible: false, offScreen: false, x: 0, y: 0, angleRad: 0, distanceMeters: 0 };
+      return {
+        visible: false,
+        offScreen: false,
+        x: 0,
+        y: 0,
+        angleRad: 0,
+        distanceMeters: 0,
+        verticalHint: 'same',
+      };
     }
 
+    const dy = this.targetPos.y - playerPos.y;
+    const verticalHint: 'same' | 'up' | 'down' = dy > 2.4 ? 'up' : dy < -2.4 ? 'down' : 'same';
     const dist = Math.hypot(
       this.targetPos.x - playerPos.x,
       this.targetPos.z - playerPos.z,
@@ -103,12 +114,13 @@ export class ObjectiveMarker {
 
     if (onScreen) {
       return {
-        visible: false,
+        visible: verticalHint !== 'same',
         offScreen: false,
         x: (ndcX * 0.5 + 0.5) * viewportW,
-        y: (-ndcY * 0.5 + 0.5) * viewportH,
+        y: Math.max(70, (-ndcY * 0.5 + 0.5) * viewportH - 36),
         angleRad: 0,
         distanceMeters: dist,
+        verticalHint,
       };
     }
 
@@ -125,6 +137,7 @@ export class ObjectiveMarker {
       y: (-clampedNdcY * 0.5 + 0.5) * viewportH,
       angleRad: angle,
       distanceMeters: dist,
+      verticalHint,
     };
   }
 }

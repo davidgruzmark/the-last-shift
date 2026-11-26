@@ -667,6 +667,9 @@ export class GameEngine {
     this.input.consumeFrameDeltas();
 
     const focusPos = this.vehicleManager.getActiveVehicle()?.position ?? this.playerController.position;
+    const playerFloor = this.vehicleManager.isInVehicle()
+      ? undefined
+      : this.playerController.getFloorState();
     const onFootInteractActive = controlsActive && !this.vehicleManager.isInVehicle();
 
     this.interactions.update(
@@ -675,8 +678,9 @@ export class GameEngine {
       this.playerController.facingYaw,
       onFootInteractActive,
       onFootInteractActive ? this.thirdPersonCamera.getGazeRay() : undefined,
+      playerFloor,
     );
-    this.missionManager.update(rawDt * worldScale, focusPos);
+    this.missionManager.update(rawDt * worldScale, focusPos, playerFloor);
     this.objectiveMarker.setTarget(this.missionManager.getCurrentMarkerPosition());
     this.objectiveMarker.update(rawDt);
     this.missionUI.updateNavigation(

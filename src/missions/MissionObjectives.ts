@@ -1,5 +1,6 @@
 import type * as THREE from 'three';
 import type { DialogueLine } from '../npcs/DialogueManager';
+import type { FloorId } from '../world/CollisionManager';
 
 export type ObjectiveType =
   | 'reach_location'
@@ -31,6 +32,7 @@ export interface MissionObjectiveDef {
   minPlayerZ?: number;
   maxPlayerZ?: number;
   targetPos?: THREE.Vector3;
+  floor?: FloorId;
   radius?: number;
   targetId?: string;
   targetIds?: readonly string[];

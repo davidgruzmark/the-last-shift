@@ -14,6 +14,7 @@ export interface Interactable {
   readonly id: string;
   readonly type: InteractableType;
   readonly radius: number;
+  readonly floor?: 1 | 2;
   readonly colliderIds?: readonly string[];
   getWorldPosition(): THREE.Vector3;
   getPromptText(): string;

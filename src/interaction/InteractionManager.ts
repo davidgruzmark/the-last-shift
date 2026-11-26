@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
+import type { FloorState } from '../player/PlayerController';
 import type { CollisionManager } from '../world/CollisionManager';
 import type { Interactable } from './Interactable';
 
@@ -71,6 +72,7 @@ export class InteractionManager {
     facingYaw: number,
     enabled = true,
     gaze?: GazeRay,
+    playerFloor?: FloorState,
   ): void {
     if (this.cooldown > 0) {
       this.cooldown = Math.max(0, this.cooldown - dt);
@@ -109,6 +111,17 @@ export class InteractionManager {
       if (!item.canInteract()) continue;
 
       const targetPos = item.getWorldPosition();
+      const dy = Math.abs(targetPos.y - playerPos.y);
+      if (dy > 2.2) continue;
+      if (
+        playerFloor &&
+        !playerFloor.onTransition &&
+        item.floor !== undefined &&
+        item.floor !== playerFloor.committedFloor
+      ) {
+        continue;
+      }
+
       const dx = targetPos.x - playerPos.x;
       const dz = targetPos.z - playerPos.z;
       const dist = Math.hypot(dx, dz);

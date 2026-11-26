@@ -2,7 +2,15 @@ import * as THREE from 'three';
 import { PLAYER_CONFIG } from '../config/constants';
 import type { EventBus, GameEvents, PlayerAnimState } from '../core/EventBus';
 import type { InputState } from '../core/InputManager';
-import type { CollisionManager } from '../world/CollisionManager';
+import type { CollisionManager, FloorId } from '../world/CollisionManager';
+
+export interface FloorState {
+  committedFloor: FloorId;
+  onTransition: boolean;
+  lastGroundedPos: THREE.Vector3;
+  lastGroundedFloor: FloorId;
+  supportingSurfaceId: string | null;
+}
 
 function normalizeAngle(angle: number): number {
   let a = angle;
@@ -24,6 +32,8 @@ export class PlayerController {
 
   private actualHorizontalSpeed = 0;
   private sprintHoldTime = 0;
+  private readonly lastConveyorVelocity = new THREE.Vector3();
+  private readonly floorState: FloorState;
   private readonly collision: CollisionManager;
   private readonly eventBus?: EventBus<GameEvents>;
 
@@ -31,10 +41,28 @@ export class PlayerController {
     spawnPosition: THREE.Vector3,
     collision: CollisionManager,
     eventBus?: EventBus<GameEvents>,
+    initialFloor: FloorId = 1,
   ) {
     this.position = spawnPosition.clone();
     this.collision = collision;
     this.eventBus = eventBus;
+    this.floorState = {
+      committedFloor: initialFloor,
+      onTransition: false,
+      lastGroundedPos: spawnPosition.clone(),
+      lastGroundedFloor: initialFloor,
+      supportingSurfaceId: null,
+    };
+  }
+
+  getFloorState(): FloorState {
+    return {
+      committedFloor: this.floorState.committedFloor,
+      onTransition: this.floorState.onTransition,
+      lastGroundedPos: this.floorState.lastGroundedPos.clone(),
+      lastGroundedFloor: this.floorState.lastGroundedFloor,
+      supportingSurfaceId: this.floorState.supportingSurfaceId,
+    };
   }
 
   update(dt: number, input: InputState, cameraYaw: number): void {
@@ -100,10 +128,14 @@ export class PlayerController {
     // Apply gravity
     this.velocity.y += PLAYER_CONFIG.gravity * dt;
 
-    // Resolve movement against world colliders and measure actual ground displacement
+    // Resolve movement against world colliders (plus escalator conveyor assist) and measure actual ground displacement
     const prevX = this.position.x;
     const prevZ = this.position.z;
     const desiredDelta = this.velocity.clone().multiplyScalar(dt);
+    if (this.grounded && this.lastConveyorVelocity.lengthSq() > 1e-4) {
+      desiredDelta.x += this.lastConveyorVelocity.x * dt;
+      desiredDelta.z += this.lastConveyorVelocity.z * dt;
+    }
     const result = this.collision.resolvePlayerMovement(
       this.position,
       desiredDelta,
@@ -113,6 +145,37 @@ export class PlayerController {
 
     this.position.copy(result.position);
     this.grounded = result.grounded;
+
+    if (result.conveyorVelocity) {
+      this.lastConveyorVelocity.copy(result.conveyorVelocity);
+    } else {
+      this.lastConveyorVelocity.set(0, 0, 0);
+    }
+
+    // Surface-aware floor state tracking (holds committedFloor during stairs/transitions and jumps)
+    this.floorState.supportingSurfaceId = result.supportingSurfaceId;
+    if (result.grounded) {
+      if (result.supportingFloor === 1 || result.supportingFloor === 2) {
+        this.floorState.committedFloor = result.supportingFloor;
+        this.floorState.onTransition = false;
+        this.floorState.lastGroundedFloor = result.supportingFloor;
+        this.floorState.lastGroundedPos.copy(this.position);
+      } else if (result.supportingFloor === 'transition') {
+        this.floorState.onTransition = true;
+      } else {
+        this.floorState.onTransition = false;
+        this.floorState.lastGroundedPos.copy(this.position);
+      }
+    }
+
+    // Safety net against extreme out-of-bounds falls without using Y thresholds for normal floor changes
+    if (this.position.y < -2.0) {
+      this.position.copy(this.floorState.lastGroundedPos);
+      this.velocity.set(0, 0, 0);
+      this.grounded = true;
+      this.floorState.committedFloor = this.floorState.lastGroundedFloor;
+      this.floorState.onTransition = false;
+    }
 
     const resolvedDx = this.position.x - prevX;
     const resolvedDz = this.position.z - prevZ;

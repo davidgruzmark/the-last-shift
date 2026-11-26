@@ -4,6 +4,7 @@ import type { EventBus, GameEvents } from '../core/EventBus';
 import { i18n } from '../i18n/LocalizationManager';
 import type { DialogueManager } from '../npcs/DialogueManager';
 import type { NPCInteraction } from '../npcs/NPCInteraction';
+import type { FloorState } from '../player/PlayerController';
 import { CALL_SCENARIOS, type PhoneManager } from '../ui/PhoneManager';
 import type {
   InvestigationState,
@@ -173,7 +174,7 @@ export class MissionManager {
     };
   }
 
-  update(_dt: number, playerPos: THREE.Vector3): void {
+  update(_dt: number, playerPos: THREE.Vector3, playerFloor?: FloorState): void {
     if (this.status !== 'active') return;
     const obj = this.getActiveObjective();
     if (!obj) return;
@@ -181,6 +182,14 @@ export class MissionManager {
     if (obj.type === 'reach_location') {
       if (obj.minPlayerZ !== undefined && playerPos.z < obj.minPlayerZ) return;
       if (obj.maxPlayerZ !== undefined && playerPos.z > obj.maxPlayerZ) return;
+      if (
+        obj.floor !== undefined &&
+        playerFloor &&
+        !playerFloor.onTransition &&
+        playerFloor.committedFloor !== obj.floor
+      ) {
+        return;
+      }
 
       if (obj.dynamicTargetKey && this.dynamicMarkerResolver) {
         if (
@@ -191,6 +200,7 @@ export class MissionManager {
         }
         const livePos = this.dynamicMarkerResolver(obj);
         if (!livePos) return;
+        if (Math.abs(playerPos.y - livePos.y) > 2.2) return;
         const dist = Math.hypot(playerPos.x - livePos.x, playerPos.z - livePos.z);
         if (dist <= (obj.chaseDistance ?? obj.radius ?? 3.5)) {
           this.completeCurrentObjective();
@@ -199,6 +209,7 @@ export class MissionManager {
       }
 
       if (obj.targetPos) {
+        if (Math.abs(playerPos.y - obj.targetPos.y) > 2.2) return;
         const radius = obj.radius ?? 2.5;
         const dist = Math.hypot(playerPos.x - obj.targetPos.x, playerPos.z - obj.targetPos.z);
         if (dist <= radius) {

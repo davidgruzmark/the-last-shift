@@ -1,5 +1,15 @@
 import * as THREE from 'three';
 
+export type FloorId = 1 | 2;
+export type SurfaceFloorTag = FloorId | 'transition';
+
+export interface SurfaceMeta {
+  floor: SurfaceFloorTag;
+  fromFloor?: FloorId;
+  toFloor?: FloorId;
+  zoneId?: string;
+}
+
 export interface ColliderBox {
   id: string;
   min: THREE.Vector3;
@@ -9,6 +19,23 @@ export interface ColliderBox {
   rotationY?: number;
   center?: THREE.Vector3;
   halfExtents?: THREE.Vector3;
+  surfaceMeta?: SurfaceMeta;
+}
+
+export interface SlopeCollider {
+  id: string;
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+  axis: 'x' | 'z';
+  yLow: number;
+  yHigh: number;
+  lowSide: 'min' | 'max';
+  surfaceMeta: SurfaceMeta;
+  conveyorVelocity?: THREE.Vector3;
+  blocksCamera: boolean;
+  enabled: boolean;
 }
 
 export interface MovementResult {
@@ -16,6 +43,9 @@ export interface MovementResult {
   grounded: boolean;
   hitCeiling: boolean;
   hitWall: boolean;
+  supportingSurfaceId: string | null;
+  supportingFloor: SurfaceFloorTag | null;
+  conveyorVelocity: THREE.Vector3 | null;
 }
 
 export interface VehicleMovementResult {
@@ -27,26 +57,62 @@ export interface VehicleMovementResult {
 
 const STEP_CLEARANCE = 0.05;
 const GROUND_EPSILON = 0.015;
+const SLOPE_SNAP_BELOW = 0.55;
+const SLOPE_SNAP_ABOVE = 0.45;
 
 /**
- * Deterministic AABB & Y-oriented OBB collision + raycast manager.
- * Resolves cylinder/capsule-like player movement against solid boxes using
- * Circle-vs-Box separation (including rotating doors) plus vertical floor/ceiling support.
+ * Deterministic AABB, Y-oriented OBB, & walkable Slope/Ramp collision + raycast manager.
+ * Resolves cylinder/capsule-like player movement against solid boxes and slopes using
+ * Circle-vs-Box separation plus surface-aware vertical floor/ceiling support.
  */
 export class CollisionManager {
   private colliders: ColliderBox[] = [];
+  private slopes: SlopeCollider[] = [];
 
   addBox(
     id: string,
     min: THREE.Vector3,
     max: THREE.Vector3,
     blocksCamera = true,
+    surfaceMeta?: SurfaceMeta,
   ): void {
     this.colliders.push({
       id,
       min: min.clone(),
       max: max.clone(),
       blocksCamera,
+      enabled: true,
+      surfaceMeta,
+    });
+  }
+
+  addSlope(options: {
+    id: string;
+    minX: number;
+    maxX: number;
+    minZ: number;
+    maxZ: number;
+    axis: 'x' | 'z';
+    yLow: number;
+    yHigh: number;
+    lowSide: 'min' | 'max';
+    surfaceMeta: SurfaceMeta;
+    conveyorVelocity?: THREE.Vector3;
+    blocksCamera?: boolean;
+  }): void {
+    this.slopes.push({
+      id: options.id,
+      minX: Math.min(options.minX, options.maxX),
+      maxX: Math.max(options.minX, options.maxX),
+      minZ: Math.min(options.minZ, options.maxZ),
+      maxZ: Math.max(options.minZ, options.maxZ),
+      axis: options.axis,
+      yLow: options.yLow,
+      yHigh: options.yHigh,
+      lowSide: options.lowSide,
+      surfaceMeta: options.surfaceMeta,
+      conveyorVelocity: options.conveyorVelocity?.clone(),
+      blocksCamera: options.blocksCamera ?? false,
       enabled: true,
     });
   }
@@ -112,8 +178,53 @@ export class CollisionManager {
     return this.colliders;
   }
 
+  getSlopes(): readonly SlopeCollider[] {
+    return this.slopes;
+  }
+
   clear(): void {
     this.colliders = [];
+    this.slopes = [];
+  }
+
+  private sampleSlopeAt(
+    x: number,
+    z: number,
+    refY: number,
+    radius: number,
+  ): { slope: SlopeCollider; surfaceY: number } | null {
+    let best: { slope: SlopeCollider; surfaceY: number } | null = null;
+    let bestDiff = Infinity;
+    const pad = radius * 0.45;
+
+    for (const slope of this.slopes) {
+      if (!slope.enabled) continue;
+      if (
+        x < slope.minX - pad ||
+        x > slope.maxX + pad ||
+        z < slope.minZ - pad ||
+        z > slope.maxZ + pad
+      ) {
+        continue;
+      }
+
+      const span = slope.axis === 'x' ? slope.maxX - slope.minX : slope.maxZ - slope.minZ;
+      if (span <= 1e-4) continue;
+      const coord = slope.axis === 'x' ? x : z;
+      const minC = slope.axis === 'x' ? slope.minX : slope.minZ;
+      const rawT = THREE.MathUtils.clamp((coord - minC) / span, 0, 1);
+      const t = slope.lowSide === 'min' ? rawT : 1 - rawT;
+      const surfaceY = THREE.MathUtils.lerp(slope.yLow, slope.yHigh, t);
+
+      if (refY >= surfaceY - SLOPE_SNAP_BELOW && refY <= surfaceY + SLOPE_SNAP_ABOVE) {
+        const diff = Math.abs(refY - surfaceY);
+        if (diff < bestDiff) {
+          bestDiff = diff;
+          best = { slope, surfaceY };
+        }
+      }
+    }
+    return best;
   }
 
   resolvePlayerMovement(
@@ -126,6 +237,9 @@ export class CollisionManager {
     let hitWall = false;
     let hitCeiling = false;
     let grounded = false;
+    let supportingSurfaceId: string | null = null;
+    let supportingFloor: SurfaceFloorTag | null = null;
+    let conveyorVelocity: THREE.Vector3 | null = null;
 
     // 1. Horizontal XZ resolution using Circle-vs-Box minimum separation.
     const horizDist = Math.hypot(desiredDelta.x, desiredDelta.z);
@@ -133,15 +247,30 @@ export class CollisionManager {
     const substeps = Math.max(1, Math.ceil(horizDist / maxStep));
     const stepX = desiredDelta.x / substeps;
     const stepZ = desiredDelta.z / substeps;
+    const jumpingUp = desiredDelta.y > 0.08;
 
     for (let step = 0; step < substeps; step++) {
       nextPos.x += stepX;
       nextPos.z += stepZ;
 
+      // Lift Y smoothly along an active staircase/ramp before horizontal slab tests so landing rims never snag
+      const slopeFollow = !jumpingUp ? this.sampleSlopeAt(nextPos.x, nextPos.z, nextPos.y, radius) : null;
+      const effectiveMinY = slopeFollow ? Math.max(nextPos.y, slopeFollow.surfaceY) : nextPos.y;
+
       for (let pass = 0; pass < 2; pass++) {
         for (const box of this.colliders) {
           if (!box.enabled) continue;
-          if (!this.overlapsY(nextPos.y + STEP_CLEARANCE, nextPos.y + height - STEP_CLEARANCE, box)) {
+          if (!this.overlapsY(effectiveMinY + STEP_CLEARANCE, effectiveMinY + height - STEP_CLEARANCE, box)) {
+            continue;
+          }
+          // Allow stepping smoothly onto the destination landing slab at the top of an active staircase/ramp
+          if (
+            slopeFollow &&
+            box.max.y >= effectiveMinY &&
+            box.max.y - slopeFollow.surfaceY <= 0.45 &&
+            (box.surfaceMeta?.floor === slopeFollow.slope.surfaceMeta.toFloor ||
+              box.surfaceMeta?.floor === slopeFollow.slope.surfaceMeta.fromFloor)
+          ) {
             continue;
           }
 
@@ -159,7 +288,7 @@ export class CollisionManager {
       }
     }
 
-    // 2. Vertical Y resolution
+    // 2. Vertical Y resolution (boxes + slopes/stairs)
     nextPos.y += desiredDelta.y;
     for (const box of this.colliders) {
       if (!box.enabled) continue;
@@ -170,10 +299,26 @@ export class CollisionManager {
         if (desiredDelta.y <= 0 && currentPos.y >= box.max.y - STEP_CLEARANCE) {
           nextPos.y = box.max.y;
           grounded = true;
+          supportingSurfaceId = box.id;
+          supportingFloor = box.surfaceMeta?.floor ?? supportingFloor;
         } else if (desiredDelta.y > 0 && currentPos.y + height <= box.min.y + STEP_CLEARANCE) {
           nextPos.y = box.min.y - height;
           hitCeiling = true;
         }
+      }
+    }
+
+    // Resolve Slope / Stair / Escalator support
+    const slopeHit = this.sampleSlopeAt(nextPos.x, nextPos.z, nextPos.y, radius);
+    if (slopeHit && (desiredDelta.y <= 0.08 || nextPos.y <= slopeHit.surfaceY + 0.05)) {
+      if (slopeHit.surfaceY >= nextPos.y - SLOPE_SNAP_ABOVE && (!grounded || slopeHit.surfaceY >= nextPos.y - 0.02)) {
+        nextPos.y = slopeHit.surfaceY;
+        grounded = true;
+        supportingSurfaceId = slopeHit.slope.id;
+        supportingFloor = slopeHit.slope.surfaceMeta.floor;
+        conveyorVelocity = slopeHit.slope.conveyorVelocity
+          ? slopeHit.slope.conveyorVelocity.clone()
+          : null;
       }
     }
 
@@ -187,12 +332,22 @@ export class CollisionManager {
         if (Math.abs(nextPos.y - box.max.y) <= GROUND_EPSILON) {
           nextPos.y = box.max.y;
           grounded = true;
+          supportingSurfaceId = box.id;
+          supportingFloor = box.surfaceMeta?.floor ?? supportingFloor;
           break;
         }
       }
     }
 
-    return { position: nextPos, grounded, hitCeiling, hitWall };
+    return {
+      position: nextPos,
+      grounded,
+      hitCeiling,
+      hitWall,
+      supportingSurfaceId,
+      supportingFloor,
+      conveyorVelocity,
+    };
   }
 
   /**
@@ -319,6 +474,9 @@ export class CollisionManager {
       if (this.overlapsCircleXZ(pos.x, pos.z, radius, box)) {
         return false;
       }
+    }
+    if (!hasFloor && this.sampleSlopeAt(pos.x, pos.z, pos.y, radius)) {
+      hasFloor = true;
     }
     return hasFloor;
   }
