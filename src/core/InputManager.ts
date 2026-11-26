@@ -5,6 +5,7 @@ export interface InputState {
   moveZ: number;
   sprint: boolean;
   jumpPressed: boolean;
+  handbrake?: boolean;
   lookDeltaX: number;
   lookDeltaY: number;
 }
@@ -56,6 +57,24 @@ export class InputManager {
     }
   }
 
+  releasePointerLock(): void {
+    if (document.pointerLockElement && document.exitPointerLock) {
+      try {
+        document.exitPointerLock();
+      } catch {
+        // Ignore pointer lock exit errors.
+      }
+    }
+  }
+
+  clearKeys(): void {
+    this.pressedKeys.clear();
+    this.jumpQueued = false;
+    this.isDragging = false;
+    this.lookDeltaX = 0;
+    this.lookDeltaY = 0;
+  }
+
   getInputState(): InputState {
     let moveX = 0;
     let moveZ = 0;
@@ -80,6 +99,7 @@ export class InputManager {
       moveZ,
       sprint,
       jumpPressed: this.jumpQueued,
+      handbrake: this.pressedKeys.has('Space'),
       lookDeltaX: this.lookDeltaX,
       lookDeltaY: this.lookDeltaY,
     };
@@ -104,6 +124,30 @@ export class InputManager {
   private handleKeyDown = (event: KeyboardEvent): void => {
     if (event.code === 'Space' && !event.repeat) {
       this.jumpQueued = true;
+    }
+    if (event.code === 'KeyE' && !event.repeat) {
+      this.eventBus.emit('input:interact', {});
+    }
+    if (event.code === 'KeyP' && !event.repeat) {
+      this.eventBus.emit('input:phone', {});
+    }
+    if (event.code === 'KeyC' && !event.repeat) {
+      this.eventBus.emit('input:collection', {});
+    }
+    if (event.code === 'KeyQ' && !event.repeat) {
+      this.eventBus.emit('input:slowmo', {});
+    }
+    if (event.code === 'KeyF' && !event.repeat) {
+      this.eventBus.emit('input:kick', {});
+    }
+    if (event.code === 'KeyG' && !event.repeat) {
+      this.eventBus.emit('input:pass', {});
+    }
+    if (event.code === 'KeyH' && !event.repeat) {
+      this.eventBus.emit('input:headlights', {});
+    }
+    if (event.code === 'Escape' && !event.repeat) {
+      this.eventBus.emit('input:cancel', {});
     }
     if (event.code === 'F3' && !event.repeat) {
       event.preventDefault();

@@ -12,8 +12,8 @@ function normalizeAngle(angle: number): number {
 }
 
 /**
- * Pure gameplay controller for Kfir: camera-relative movement, walk/run,
- * jump + gravity, smooth turning, and collision resolution.
+ * Pure gameplay controller for Kfir: camera-relative movement, walk/run/sprint,
+ * jump + gravity, smooth turning, and collision resolution with actual-speed tracking.
  */
 export class PlayerController {
   readonly position: THREE.Vector3;
@@ -22,6 +22,8 @@ export class PlayerController {
   grounded = true;
   animState: PlayerAnimState = 'idle';
 
+  private actualHorizontalSpeed = 0;
+  private sprintHoldTime = 0;
   private readonly collision: CollisionManager;
   private readonly eventBus?: EventBus<GameEvents>;
 
@@ -36,8 +38,6 @@ export class PlayerController {
   }
 
   update(dt: number, input: InputState, cameraYaw: number): void {
-    // Camera-relative forward & right vectors projected onto XZ plane.
-    // Camera sits behind player at (+sin(yaw), +cos(yaw)), so forward view is (-sin(yaw), -cos(yaw)).
     const forwardX = -Math.sin(cameraYaw);
     const forwardZ = -Math.cos(cameraYaw);
     const rightX = Math.cos(cameraYaw);
@@ -53,11 +53,30 @@ export class PlayerController {
       wishZ /= wishLen;
     }
 
-    const targetSpeed = hasMoveInput
-      ? input.sprint
-        ? PLAYER_CONFIG.runSpeed
-        : PLAYER_CONFIG.walkSpeed
-      : 0;
+    // Track sustained Shift+movement for smooth Run -> Sprint energy ramp
+    if (hasMoveInput && input.sprint && this.grounded) {
+      this.sprintHoldTime += dt;
+    } else if (!input.sprint || !hasMoveInput) {
+      this.sprintHoldTime = 0;
+    }
+
+    let targetSpeed = 0;
+    if (hasMoveInput) {
+      if (input.sprint) {
+        const sprintRamp = THREE.MathUtils.clamp(
+          (this.sprintHoldTime - PLAYER_CONFIG.sprintRampDelay) / 0.45,
+          0,
+          1,
+        );
+        targetSpeed = THREE.MathUtils.lerp(
+          PLAYER_CONFIG.runSpeed,
+          PLAYER_CONFIG.sprintSpeed,
+          sprintRamp,
+        );
+      } else {
+        targetSpeed = PLAYER_CONFIG.walkSpeed;
+      }
+    }
 
     const targetVelX = wishX * targetSpeed;
     const targetVelZ = wishZ * targetSpeed;
@@ -81,7 +100,9 @@ export class PlayerController {
     // Apply gravity
     this.velocity.y += PLAYER_CONFIG.gravity * dt;
 
-    // Resolve movement against world colliders
+    // Resolve movement against world colliders and measure actual ground displacement
+    const prevX = this.position.x;
+    const prevZ = this.position.z;
     const desiredDelta = this.velocity.clone().multiplyScalar(dt);
     const result = this.collision.resolvePlayerMovement(
       this.position,
@@ -93,6 +114,10 @@ export class PlayerController {
     this.position.copy(result.position);
     this.grounded = result.grounded;
 
+    const resolvedDx = this.position.x - prevX;
+    const resolvedDz = this.position.z - prevZ;
+    this.actualHorizontalSpeed = dt > 1e-6 ? Math.hypot(resolvedDx, resolvedDz) / dt : 0;
+
     if (result.grounded && this.velocity.y < 0) {
       this.velocity.y = 0;
     }
@@ -100,21 +125,28 @@ export class PlayerController {
       this.velocity.y = 0;
     }
 
-    // Smoothly rotate Kfir toward horizontal movement direction
-    const horizontalSpeed = Math.hypot(this.velocity.x, this.velocity.z);
-    if (hasMoveInput && horizontalSpeed > 0.25) {
+    // Smoothly rotate Kfir toward movement input direction
+    const cmdSpeed = Math.hypot(this.velocity.x, this.velocity.z);
+    if (hasMoveInput && cmdSpeed > 0.25) {
       const targetYaw = Math.atan2(wishX, wishZ);
       const diff = normalizeAngle(targetYaw - this.facingYaw);
       const turnBlend = 1 - Math.exp(-PLAYER_CONFIG.turnSpeed * dt);
       this.facingYaw = normalizeAngle(this.facingYaw + diff * turnBlend);
     }
 
-    // Derive animation state
+    // Derive animation state from actual resolved ground speed (prevents running-in-place)
     let nextState: PlayerAnimState = 'idle';
     if (!this.grounded) {
       nextState = 'jump';
-    } else if (horizontalSpeed > 0.4) {
-      nextState = input.sprint && horizontalSpeed > PLAYER_CONFIG.walkSpeed + 0.8 ? 'run' : 'walk';
+    } else if (this.actualHorizontalSpeed > PLAYER_CONFIG.runSpeed + 0.6) {
+      nextState = 'sprint';
+    } else if (
+      input.sprint &&
+      this.actualHorizontalSpeed > PLAYER_CONFIG.walkSpeed + 0.8
+    ) {
+      nextState = 'run';
+    } else if (this.actualHorizontalSpeed > 0.35) {
+      nextState = 'walk';
     }
 
     if (nextState !== this.animState) {
@@ -127,6 +159,6 @@ export class PlayerController {
   }
 
   getHorizontalSpeed(): number {
-    return Math.hypot(this.velocity.x, this.velocity.z);
+    return this.actualHorizontalSpeed;
   }
 }

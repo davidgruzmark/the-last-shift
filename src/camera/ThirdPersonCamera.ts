@@ -12,13 +12,15 @@ export class ThirdPersonCamera {
   private yaw = 0; // Starts behind Kfir looking toward -Z (the CCTV console)
   private pitch = 0.24;
   private currentDistance: number = CAMERA_CONFIG.distance;
+  private activeDistanceLimit: number = CAMERA_CONFIG.distance;
+  private activePivotHeight: number = CAMERA_CONFIG.pivotHeight;
   private readonly smoothedPivot = new THREE.Vector3();
   private initialized = false;
 
   private readonly collision: CollisionManager;
 
   constructor(aspect: number, collision: CollisionManager) {
-    this.camera = new THREE.PerspectiveCamera(60, aspect, 0.1, 120);
+    this.camera = new THREE.PerspectiveCamera(60, aspect, 0.2, 120);
     this.collision = collision;
   }
 
@@ -28,6 +30,16 @@ export class ThirdPersonCamera {
 
   getCurrentDistance(): number {
     return this.currentDistance;
+  }
+
+  getGazeRay(): { origin: THREE.Vector3; direction: THREE.Vector3 } {
+    this.camera.updateMatrixWorld();
+    const direction = new THREE.Vector3();
+    this.camera.getWorldDirection(direction);
+    return {
+      origin: this.camera.position.clone(),
+      direction,
+    };
   }
 
   setAspect(aspect: number): void {
@@ -44,10 +56,64 @@ export class ThirdPersonCamera {
       CAMERA_CONFIG.maxPitch,
     );
 
+    const modeBlend = 1 - Math.exp(-8 * dt);
+    this.activeDistanceLimit += (CAMERA_CONFIG.distance - this.activeDistanceLimit) * modeBlend;
+    this.activePivotHeight += (CAMERA_CONFIG.pivotHeight - this.activePivotHeight) * modeBlend;
+
+    this.applyCameraFrame(dt, playerPosition, this.activePivotHeight, this.activeDistanceLimit);
+  }
+
+  /**
+   * Dedicated third-person driving camera that follows smoothly behind the vehicle,
+   * adjusts naturally during turns, allows optional mouse look, and prevents wall clipping.
+   */
+  updateDriving(
+    dt: number,
+    vehiclePosition: THREE.Vector3,
+    vehicleYaw: number,
+    vehicleSpeed: number,
+    input: InputState,
+  ): void {
+    const manualLook = Math.abs(input.lookDeltaX) > 0.01 || Math.abs(input.lookDeltaY) > 0.01;
+    if (manualLook) {
+      this.yaw -= input.lookDeltaX * CAMERA_CONFIG.sensitivity;
+      this.pitch = THREE.MathUtils.clamp(
+        this.pitch + input.lookDeltaY * CAMERA_CONFIG.sensitivity,
+        -0.1,
+        0.75,
+      );
+    } else {
+      // Gently align behind the vehicle (+PI offsets from +Z vehicle heading to camera behind car)
+      const desiredYaw = vehicleYaw + Math.PI;
+      let diff = desiredYaw - this.yaw;
+      while (diff > Math.PI) diff -= Math.PI * 2;
+      while (diff < -Math.PI) diff += Math.PI * 2;
+      const alignRate = Math.abs(vehicleSpeed) > 0.6 ? 5.2 : 3.2;
+      this.yaw += diff * (1 - Math.exp(-alignRate * dt));
+
+      const targetPitch = 0.27;
+      this.pitch += (targetPitch - this.pitch) * (1 - Math.exp(-5.0 * dt));
+    }
+
+    const modeBlend = 1 - Math.exp(-7 * dt);
+    const speedZoom = Math.min(1.1, Math.abs(vehicleSpeed) * 0.05);
+    const targetDist = 6.7 + speedZoom;
+    this.activeDistanceLimit += (targetDist - this.activeDistanceLimit) * modeBlend;
+    this.activePivotHeight += (1.75 - this.activePivotHeight) * modeBlend;
+
+    this.applyCameraFrame(dt, vehiclePosition, this.activePivotHeight, this.activeDistanceLimit);
+  }
+
+  private applyCameraFrame(
+    dt: number,
+    targetPosition: THREE.Vector3,
+    pivotHeight: number,
+    desiredDistance: number,
+  ): void {
     const targetPivot = new THREE.Vector3(
-      playerPosition.x,
-      playerPosition.y + CAMERA_CONFIG.pivotHeight,
-      playerPosition.z,
+      targetPosition.x,
+      targetPosition.y + pivotHeight,
+      targetPosition.z,
     );
 
     if (!this.initialized) {
@@ -59,8 +125,8 @@ export class ThirdPersonCamera {
     }
 
     // Offset from pivot: behind player along +Z when yaw = 0
-    const horizDist = CAMERA_CONFIG.distance * Math.cos(this.pitch);
-    const vertOffset = CAMERA_CONFIG.distance * Math.sin(this.pitch);
+    const horizDist = desiredDistance * Math.cos(this.pitch);
+    const vertOffset = desiredDistance * Math.sin(this.pitch);
 
     const idealPos = new THREE.Vector3(
       this.smoothedPivot.x + Math.sin(this.yaw) * horizDist,

@@ -46,6 +46,7 @@ export function createKfirModel(palette: MaterialPalette): KfirRig {
 
   const skinMat = mat(IKEA_COLORS.skin, 0.78, 0.02);
   const hairMat = mat(IKEA_COLORS.hair, 0.88, 0.02);
+  const hairMidFadeMat = mat(IKEA_COLORS.hairMidFade, 0.89, 0.02);
   const hairFadeMat = mat(IKEA_COLORS.hairFade, 0.9, 0.02);
   const facialHairMat = mat(IKEA_COLORS.facialHair, 0.88, 0.02);
   const shirtMat = mat(IKEA_COLORS.securityShirt, 0.82, 0.04);
@@ -54,6 +55,16 @@ export function createKfirModel(palette: MaterialPalette): KfirRig {
   const pantsMat = mat(IKEA_COLORS.securityPants, 0.86, 0.03);
   const bootsMat = mat(IKEA_COLORS.boots, 0.72, 0.1);
   const eyeMat = mat(0x141418, 0.3, 0.1);
+  const radioBodyMat = mat(0x20262e, 0.6, 0.2);
+  const radioLedMat = new THREE.MeshStandardMaterial({
+    color: 0x2ecc71,
+    emissive: 0x2ecc71,
+    emissiveIntensity: 0.75,
+    roughness: 0.3,
+  });
+  const holsterMat = mat(0x1a1c20, 0.7, 0.12);
+  const gunmetalMat = mat(0x363d47, 0.38, 0.65);
+  const pistolGripMat = mat(0x16181c, 0.85, 0.08);
 
   const hips = new THREE.Group();
   hips.position.y = 0.78;
@@ -120,27 +131,62 @@ export function createKfirModel(palette: MaterialPalette): KfirRig {
   buckle.position.set(0, 0.03, 0.138);
   torso.add(buckle);
 
-  // Walkie-talkie on right shoulder/chest
-  const radioBody = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 0.045), palette.metalDark);
-  radioBody.position.set(-0.21, 0.38, 0.125);
-  torso.add(radioBody);
+  // Security radio (walkie-talkie) mounted on left-rear belt
+  const radioGroup = new THREE.Group();
+  radioGroup.name = 'kfir-radio';
+  radioGroup.position.set(0.246, 0.045, -0.055);
+  torso.add(radioGroup);
 
+  const radioClip = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.06, 0.04), bootsMat);
+  radioClip.position.set(-0.015, -0.01, 0);
+  const radioBody = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.125, 0.068), radioBodyMat);
+  radioBody.position.set(0.01, 0.015, 0);
+  const radioSpeaker = new THREE.Mesh(new THREE.BoxGeometry(0.008, 0.055, 0.046), palette.metalGrey);
+  radioSpeaker.position.set(0.034, 0.02, 0);
+  const radioLed = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.014, 0.014), radioLedMat);
+  radioLed.position.set(0.032, 0.068, 0.016);
   const radioAntenna = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.008, 0.01, 0.12, 6),
+    new THREE.CylinderGeometry(0.006, 0.009, 0.13, 6),
     bootsMat,
   );
-  radioAntenna.position.set(-0.22, 0.49, 0.125);
-  torso.add(radioAntenna);
+  radioAntenna.position.set(0.01, 0.14, -0.018);
+  radioGroup.add(radioClip, radioBody, radioSpeaker, radioLed, radioAntenna);
 
-  // Key ring on left hip
+  // Key ring preserved on left-front belt
+  const keysGroup = new THREE.Group();
+  keysGroup.name = 'kfir-keys';
+  keysGroup.position.set(0.24, 0.01, 0.065);
+  torso.add(keysGroup);
+
   const keyRing = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.008, 6, 10), palette.gold);
-  keyRing.position.set(0.24, 0.01, 0.04);
   keyRing.rotation.y = Math.PI / 2;
-  torso.add(keyRing);
+  const keyBlade1 = new THREE.Mesh(new THREE.BoxGeometry(0.014, 0.06, 0.024), palette.gold);
+  keyBlade1.position.set(0, -0.05, 0.005);
+  const keyBlade2 = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.05, 0.02), palette.metalGrey);
+  keyBlade2.position.set(0.006, -0.045, -0.012);
+  keysGroup.add(keyRing, keyBlade1, keyBlade2);
 
-  const keyBlade = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.06, 0.025), palette.gold);
-  keyBlade.position.set(0.24, -0.04, 0.04);
-  torso.add(keyBlade);
+  // Service pistol in belt-mounted holster on right hip (visual accessory only)
+  const holsterGroup = new THREE.Group();
+  holsterGroup.name = 'kfir-pistol-holster';
+  holsterGroup.position.set(-0.248, 0.0, 0.01);
+  torso.add(holsterGroup);
+
+  const beltLoop = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.075, 0.075), holsterMat);
+  beltLoop.position.set(0.012, 0.028, 0);
+  const holsterBody = new THREE.Mesh(new THREE.BoxGeometry(0.056, 0.15, 0.088), holsterMat);
+  holsterBody.position.set(-0.012, -0.04, 0.005);
+  holsterBody.rotation.x = 0.08;
+  const retentionStrap = new THREE.Mesh(new THREE.BoxGeometry(0.064, 0.024, 0.092), palette.metalDark);
+  retentionStrap.position.set(-0.012, 0.02, 0.005);
+  // Service pistol seated inside holster (gunmetal slide + dark grip angled backward)
+  const pistolSlide = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.11, 0.056), gunmetalMat);
+  pistolSlide.position.set(-0.012, -0.005, 0.015);
+  pistolSlide.rotation.x = 0.12;
+  const pistolGrip = new THREE.Mesh(new THREE.BoxGeometry(0.034, 0.085, 0.046), pistolGripMat);
+  pistolGrip.position.set(-0.012, 0.065, -0.028);
+  pistolGrip.rotation.x = -0.35;
+  holsterGroup.add(beltLoop, holsterBody, retentionStrap, pistolSlide, pistolGrip);
 
   // Head group (moderately stylized larger proportions)
   const headGroup = new THREE.Group();
@@ -193,10 +239,10 @@ export function createKfirModel(palette: MaterialPalette): KfirRig {
   addHairPart('hair-left-lower-fade', 0.012, 0.08, 0.21, 0.176, 0.31, -0.055, hairFadeMat);
   addHairPart('hair-right-lower-fade', 0.012, 0.08, 0.21, -0.176, 0.31, -0.055, hairFadeMat);
 
-  // Upper fade transition (natural dark brown): Y [0.350, 0.420]
-  addHairPart('hair-back-upper-fade', 0.372, 0.07, 0.02, 0, 0.385, -0.17, hairMat);
-  addHairPart('hair-left-upper-fade', 0.016, 0.07, 0.23, 0.178, 0.385, -0.045, hairMat);
-  addHairPart('hair-right-upper-fade', 0.016, 0.07, 0.23, -0.178, 0.385, -0.045, hairMat);
+  // Upper fade transition (medium warm brown): Y [0.350, 0.420]
+  addHairPart('hair-back-upper-fade', 0.372, 0.07, 0.02, 0, 0.385, -0.17, hairMidFadeMat);
+  addHairPart('hair-left-upper-fade', 0.016, 0.07, 0.23, 0.178, 0.385, -0.045, hairMidFadeMat);
+  addHairPart('hair-right-upper-fade', 0.016, 0.07, 0.23, -0.178, 0.385, -0.045, hairMidFadeMat);
 
   // Slightly longer Marine top stacked cleanly above y = 0.420
   addHairPart('hair-top-base', 0.356, 0.064, 0.336, 0, 0.452, -0.008, hairMat);
@@ -211,10 +257,10 @@ export function createKfirModel(palette: MaterialPalette): KfirRig {
   headGroup.add(leftEye, rightEye);
 
   const browGeo = new THREE.BoxGeometry(0.07, 0.02, 0.016);
-  const leftBrow = new THREE.Mesh(browGeo, facialHairMat);
+  const leftBrow = new THREE.Mesh(browGeo, hairMat);
   leftBrow.position.set(0.07, 0.32, 0.168);
   leftBrow.userData.noSelfShadow = true;
-  const rightBrow = new THREE.Mesh(browGeo, facialHairMat);
+  const rightBrow = new THREE.Mesh(browGeo, hairMat);
   rightBrow.position.set(-0.07, 0.32, 0.168);
   rightBrow.userData.noSelfShadow = true;
   headGroup.add(leftBrow, rightBrow);

@@ -56,10 +56,23 @@ describe('KfirModel', () => {
     }
   });
 
-  it('uses distinct fair skin, dark brown hair/facial hair, black polo, and beige trousers', () => {
-    expect(IKEA_COLORS.hair).toBe(0x4e3422);
+  it('uses 3-tone brown Marine fade, fair skin, black polo, beige trousers, and belt equipment', () => {
+    expect(IKEA_COLORS.hair).toBe(0x4b3120);
+    expect(IKEA_COLORS.hairMidFade).toBe(0x73523a);
+    expect(IKEA_COLORS.hairFade).toBe(0x9c7656);
+    expect(IKEA_COLORS.facialHair).toBe(0x684a35);
     expect(IKEA_COLORS.skin).toBe(0xf2ccb7);
     expect(IKEA_COLORS.securityShirt).toBe(0x1b1e23);
     expect(IKEA_COLORS.securityPants).toBe(0xc8b598);
+
+    const assets = new AssetManager();
+    const palette = createPalette(assets);
+    const rig = createKfirModel(palette);
+
+    expect(rig.headGroup.getObjectByName('kfir-mustache')).toBeDefined();
+    expect(rig.headGroup.getObjectByName('kfir-goatee')).toBeDefined();
+    expect(rig.torso.getObjectByName('kfir-radio')).toBeDefined();
+    expect(rig.torso.getObjectByName('kfir-pistol-holster')).toBeDefined();
+    expect(rig.torso.getObjectByName('kfir-keys')).toBeDefined();
   });
 });

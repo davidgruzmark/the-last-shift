@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import {
-  createExitDoor,
   createFireExtinguisher,
   createOfficeChair,
   createSecurityDesk,
@@ -44,7 +43,6 @@ function placeProp(
 
   if (prop.colliderSize && prop.colliderOffset) {
     const size = prop.colliderSize.clone();
-    // Swap X/Z bounds when rotated 90 degrees
     if (Math.abs(Math.sin(rotY)) > 0.707) {
       const tmp = size.x;
       size.x = size.z;
@@ -57,13 +55,14 @@ function placeProp(
 
 /**
  * Builds the IKEA Security Control Room (14m x 12m x 4.2m), lighting,
- * props, and collision bounds for Phase 1.
+ * props, and collision bounds with an open East doorway leading to the Showroom.
  */
 export function buildControlRoom(
   assets: AssetManager,
   collision: CollisionManager,
+  sharedPalette?: MaterialPalette,
 ): ControlRoomResult {
-  const palette = createPalette(assets);
+  const palette = sharedPalette ?? createPalette(assets);
   const group = new THREE.Group();
   group.name = 'ControlRoom';
 
@@ -78,9 +77,9 @@ export function buildControlRoom(
   group.add(floorMesh);
   registerBoxCollider(
     collision,
-    'floor',
+    'control-floor',
     new THREE.Vector3(0, -0.5, 0),
-    new THREE.Vector3(width + 2, 1.0, depth + 2),
+    new THREE.Vector3(width, 1.0, depth),
     true,
   );
 
@@ -90,9 +89,9 @@ export function buildControlRoom(
   group.add(ceilingMesh);
   registerBoxCollider(
     collision,
-    'ceiling',
+    'control-ceiling',
     new THREE.Vector3(0, height + 0.5, 0),
-    new THREE.Vector3(width + 2, 1.0, depth + 2),
+    new THREE.Vector3(width, 1.0, depth),
     true,
   );
 
@@ -113,36 +112,42 @@ export function buildControlRoom(
     w: number,
     d: number,
     stripeAxis: 'x' | 'z',
+    wallH: number = height,
+    baseY = 0,
+    includeStripe = true,
   ): void => {
-    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, height, d), palette.wall);
-    wall.position.set(x, height / 2, z);
+    const centerY = baseY + wallH / 2;
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, wallH, d), palette.wall);
+    wall.position.set(x, centerY, z);
     wall.receiveShadow = true;
     wall.castShadow = true;
     group.add(wall);
 
-    // IKEA blue dado band + yellow pinstripe inside room
-    const bandW = stripeAxis === 'x' ? w : d + 0.03;
-    const bandD = stripeAxis === 'x' ? d + 0.03 : d;
-    const blueBand = new THREE.Mesh(
-      new THREE.BoxGeometry(stripeAxis === 'x' ? bandW : w + 0.03, 0.9, bandD),
-      palette.ikeaBlue,
-    );
-    blueBand.position.set(x, 0.45, z);
-    blueBand.receiveShadow = true;
-    group.add(blueBand);
+    if (includeStripe) {
+      // Inset dado bands clear of perpendicular walls & separate vertically from floor/each other
+      const bandW = stripeAxis === 'x' ? Math.max(0.1, w - (wallThickness + 0.06) * 2) : w + 0.024;
+      const bandD = stripeAxis === 'x' ? d + 0.024 : Math.max(0.1, d - 0.06);
+      const blueBand = new THREE.Mesh(new THREE.BoxGeometry(bandW, 0.88, bandD), palette.ikeaBlue);
+      blueBand.position.set(x, 0.445, z);
+      blueBand.receiveShadow = true;
+      group.add(blueBand);
 
-    const yellowLine = new THREE.Mesh(
-      new THREE.BoxGeometry(stripeAxis === 'x' ? bandW : w + 0.04, 0.1, stripeAxis === 'x' ? d + 0.04 : d),
-      palette.ikeaYellow,
-    );
-    yellowLine.position.set(x, 0.94, z);
-    group.add(yellowLine);
+      const lineW = stripeAxis === 'x' ? Math.max(0.1, w - (wallThickness + 0.06) * 2) : w + 0.03;
+      const lineD = stripeAxis === 'x' ? d + 0.03 : Math.max(0.1, d - 0.06);
+      const yellowLine = new THREE.Mesh(
+        new THREE.BoxGeometry(lineW, 0.09, lineD),
+        palette.ikeaYellow,
+      );
+      yellowLine.position.set(x, 0.94, z);
+      yellowLine.receiveShadow = false;
+      group.add(yellowLine);
+    }
 
     registerBoxCollider(
       collision,
       id,
-      new THREE.Vector3(x, height / 2, z),
-      new THREE.Vector3(w, height, d),
+      new THREE.Vector3(x, centerY, z),
+      new THREE.Vector3(w, wallH, d),
       true,
     );
   };
@@ -150,7 +155,25 @@ export function buildControlRoom(
   addWall('wall-north', 0, -halfD - wallThickness / 2, width + wallThickness * 2, wallThickness, 'x');
   addWall('wall-south', 0, halfD + wallThickness / 2, width + wallThickness * 2, wallThickness, 'x');
   addWall('wall-west', -halfW - wallThickness / 2, 0, wallThickness, depth, 'z');
-  addWall('wall-east', halfW + wallThickness / 2, 0, wallThickness, depth, 'z');
+
+  // East wall split around open 2.8m doorway to Showroom: z in [2.2, 5.0], height 2.8m
+  const eastX = halfW + wallThickness / 2;
+  addWall('wall-east-north', eastX, -1.9, wallThickness, 8.2, 'z'); // z: [-6.0, +2.2]
+  addWall('wall-east-south', eastX, 5.5, wallThickness, 1.0, 'z'); // z: [+5.0, +6.0]
+  addWall('wall-east-lintel', eastX, 3.6, wallThickness, 2.8, 'z', 1.4, 2.8, false);
+
+  // Doorway frame inset strictly clear of adjacent wall faces and lintel
+  const frameL = new THREE.Mesh(new THREE.BoxGeometry(0.32, 2.79, 0.11), palette.metalDark);
+  frameL.position.set(eastX, 1.395, 2.265);
+  const frameR = new THREE.Mesh(new THREE.BoxGeometry(0.32, 2.79, 0.11), palette.metalDark);
+  frameR.position.set(eastX, 1.395, 4.935);
+  const frameTop = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.11, 2.55), palette.metalDark);
+  frameTop.position.set(eastX, 2.735, 3.6);
+  group.add(frameL, frameR, frameTop);
+
+  const exitSign = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 1.5), palette.exitSign);
+  exitSign.position.set(halfW - 0.05, 3.15, 3.6);
+  group.add(exitSign);
 
   // IKEA SECURITY CONTROL sign on North wall above CCTV console
   const signMesh = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.05, 0.08), palette.controlSign);
@@ -193,7 +216,7 @@ export function buildControlRoom(
     Math.PI / 2,
   );
 
-  // Storage Shelves along East wall
+  // Storage Shelves along East-North wall
   placeProp(
     group,
     collision,
@@ -207,11 +230,11 @@ export function buildControlRoom(
     collision,
     'shelf-2',
     createStorageShelf(palette),
-    new THREE.Vector3(halfW - 0.5, 0, 0.6),
+    new THREE.Vector3(halfW - 0.5, 0, 0.4),
     -Math.PI / 2,
   );
 
-  // Low-poly IKEA sample crate near South-West corner to test jumping/collision
+  // Low-poly IKEA sample crate near South-West corner
   const crateMesh = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.65, 1.1), palette.boxLabel);
   crateMesh.position.set(-4.5, 0.325, 3.8);
   crateMesh.castShadow = true;
@@ -225,39 +248,18 @@ export function buildControlRoom(
     true,
   );
 
-  // Exit Door on East-South wall (anchor for Phase 2)
-  const exitDoor = createExitDoor(palette);
-  exitDoor.group.position.set(halfW - 0.05, 0, 3.8);
-  exitDoor.group.rotation.y = -Math.PI / 2;
-  group.add(exitDoor.group);
-
-  // Fire Extinguisher next to Exit Door
+  // Fire Extinguisher next to doorway
   const extinguisher = createFireExtinguisher(palette);
-  extinguisher.position.set(halfW - 0.3, 0, 2.5);
+  extinguisher.position.set(halfW - 0.32, 0, 1.8);
   group.add(extinguisher);
 
-  // Lighting: HemisphereLight + tightly-bounded DirectionalLight + subtle console glow
-  const hemiLight = new THREE.HemisphereLight(0xdceeff, 0x8b7e74, 0.9);
-  hemiLight.position.set(0, height, 0);
-  group.add(hemiLight);
-
-  const sunLight = new THREE.DirectionalLight(0xfff8eb, 1.25);
-  sunLight.position.set(4.5, 9.0, 5.5);
-  sunLight.castShadow = true;
-  sunLight.shadow.mapSize.set(1024, 1024);
-  sunLight.shadow.camera.near = 1;
-  sunLight.shadow.camera.far = 24;
-  sunLight.shadow.camera.left = -9;
-  sunLight.shadow.camera.right = 9;
-  sunLight.shadow.camera.top = 9;
-  sunLight.shadow.camera.bottom = -9;
-  sunLight.shadow.bias = -0.0008;
-  sunLight.shadow.normalBias = 0.02;
-  group.add(sunLight);
-
-  const monitorFill = new THREE.PointLight(0x6ec1ff, 1.4, 7.5, 1.6);
+  // Local CCTV glow light (main directional & hemisphere lights live in WorldManager)
+  const monitorFill = new THREE.PointLight(0x6ec1ff, 1.35, 8.0, 1.5);
   monitorFill.position.set(0, 1.85, -2.8);
   group.add(monitorFill);
+
+  // Placeholder DirectionalLight reference for compatibility if used standalone
+  const sunLight = new THREE.DirectionalLight(0xfff8eb, 0);
 
   return { group, palette, sunLight };
 }
