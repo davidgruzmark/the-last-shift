@@ -217,6 +217,14 @@ export class MissionPropsController {
   private m5BottleCollected = false;
   private m5PickupAnim = -1;
 
+  // M08 Security Breach props
+  private readonly m8BreachPanelProp: SimpleMissionProp;
+  private readonly m8GateControlProp: SimpleMissionProp;
+
+  // M09 The Last Shift: home beacon visible on the west road exit
+  private readonly m9HomeGroup: THREE.Group;
+  private readonly m9HomeLight: THREE.PointLight;
+
   constructor(
     palette: MaterialPalette,
     interactions: InteractionManager,
@@ -599,6 +607,107 @@ export class MissionPropsController {
       },
     });
 
+    // --- M08: Security Breach (tripped Warehouse panel + Parking delivery gate) ---
+    const panelVisual = new THREE.Group();
+    const panelBox = new THREE.Mesh(new THREE.BoxGeometry(0.7, 1.0, 0.16), palette.metalDark);
+    panelBox.position.y = 1.2;
+    const panelStripe = new THREE.Mesh(
+      new THREE.BoxGeometry(0.72, 0.12, 0.18),
+      palette.ikeaYellow,
+    );
+    panelStripe.position.y = 1.52;
+    const panelLight = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.12, 0.06),
+      new THREE.MeshStandardMaterial({
+        color: 0xff3b30,
+        emissive: 0xff3b30,
+        emissiveIntensity: 1.1,
+      }),
+    );
+    panelLight.position.set(0.18, 1.34, 0.1);
+    panelVisual.add(panelBox, panelStripe, panelLight);
+
+    this.m8BreachPanelProp = new SimpleMissionProp({
+      id: 'm8-breach-panel',
+      type: 'interact',
+      position: WORLD_ANCHORS.warehouse.m8Panel.position,
+      floor: WORLD_ANCHORS.warehouse.m8Panel.floor,
+      promptText: 'PRESS E TO INSPECT ELECTRICAL PANEL',
+      radius: 2.8,
+      mesh: panelVisual,
+      isEligible: () => this.missions.getActiveObjective()?.id === 'm8-check-panel',
+      onTrigger: () => {
+        this.missions.notifyInteract('m8-breach-panel');
+      },
+    });
+
+    const gateVisual = new THREE.Group();
+    const gatePost = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.6, 0.3), palette.ikeaYellow);
+    gatePost.position.y = 0.8;
+    const gateBox = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.5, 0.24), palette.darkNavy);
+    gateBox.position.set(0, 1.35, 0.24);
+    const gateLamp = new THREE.Mesh(
+      new THREE.SphereGeometry(0.09, 8, 8),
+      new THREE.MeshStandardMaterial({
+        color: 0xff3b30,
+        emissive: 0xff3b30,
+        emissiveIntensity: 1.1,
+      }),
+    );
+    gateLamp.position.set(0, 1.72, 0.24);
+    gateVisual.add(gatePost, gateBox, gateLamp);
+
+    this.m8GateControlProp = new SimpleMissionProp({
+      id: 'm8-gate-control',
+      type: 'interact',
+      position: WORLD_ANCHORS.parking.deliveryGate.position,
+      floor: WORLD_ANCHORS.parking.deliveryGate.floor,
+      promptText: 'PRESS E TO SECURE DELIVERY GATE',
+      radius: 3.2,
+      mesh: gateVisual,
+      isEligible: () => this.missions.getActiveObjective()?.id === 'm8-secure-gate',
+      onTrigger: () => {
+        this.missions.notifyInteract('m8-gate-control');
+      },
+    });
+
+    // --- M09: Home Sweet Home beacon at the west end of the access road ---
+    this.m9HomeGroup = new THREE.Group();
+    this.m9HomeGroup.name = 'M9HomeBeacon';
+    const homeAnchor = WORLD_ANCHORS.parking.homeGate.position;
+    this.m9HomeGroup.position.set(homeAnchor.x - 4.5, 0, homeAnchor.z);
+
+    const houseBody = new THREE.Mesh(
+      new THREE.BoxGeometry(5.2, 3.0, 4.2),
+      new THREE.MeshStandardMaterial({ color: 0xe8dcc8, roughness: 0.85, flatShading: true }),
+    );
+    houseBody.position.y = 1.5;
+    const houseRoof = new THREE.Mesh(
+      new THREE.ConeGeometry(3.9, 1.8, 4),
+      new THREE.MeshStandardMaterial({ color: 0xa85b3a, roughness: 0.8, flatShading: true }),
+    );
+    houseRoof.position.y = 3.9;
+    houseRoof.rotation.y = Math.PI / 4;
+    const houseDoor = new THREE.Mesh(
+      new THREE.BoxGeometry(0.9, 1.6, 0.12),
+      new THREE.MeshStandardMaterial({ color: 0x6b4a33, roughness: 0.7 }),
+    );
+    houseDoor.position.set(1.4, 0.8, 2.12);
+    const houseWindow = new THREE.Mesh(
+      new THREE.BoxGeometry(1.1, 0.9, 0.1),
+      new THREE.MeshStandardMaterial({
+        color: 0xffd98a,
+        emissive: 0xffc966,
+        emissiveIntensity: 1.0,
+      }),
+    );
+    houseWindow.position.set(-1.2, 1.6, 2.12);
+    this.m9HomeLight = new THREE.PointLight(0xffc966, 1.1, 14);
+    this.m9HomeLight.position.set(0, 3.2, 3.4);
+    this.m9HomeGroup.add(houseBody, houseRoof, houseDoor, houseWindow, this.m9HomeLight);
+    this.m9HomeGroup.visible = false;
+    this.group.add(this.m9HomeGroup);
+
     const allProps = [
       this.radioProp,
       this.warehouseClueProp,
@@ -611,6 +720,8 @@ export class MissionPropsController {
       this.m5EmptyDisplayProp,
       this.m5ClueBagProp,
       this.m5PerfumeBottleProp,
+      this.m8BreachPanelProp,
+      this.m8GateControlProp,
     ];
     for (const prop of allProps) {
       prop.setVisible(false);
@@ -713,6 +824,17 @@ export class MissionPropsController {
       }
 
       this.m5ClueBagProp.setVisible(m5 && objId === 'm5-inspect-bag-clue');
+    });
+
+    this.progression.registerRule('m8-security-breach', (state: WorldProgressionState) => {
+      const m8 = state.activeMissionId === 'mission-08';
+      this.m8BreachPanelProp.setVisible(m8 && state.activeObjectiveId === 'm8-check-panel');
+      this.m8GateControlProp.setVisible(m8 && state.activeObjectiveId === 'm8-secure-gate');
+    });
+
+    this.progression.registerRule('m9-home-beacon', (state: WorldProgressionState) => {
+      this.m9HomeGroup.visible =
+        state.activeMissionId === 'mission-09' || state.completedMissions.has('mission-09');
     });
   }
 

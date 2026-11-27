@@ -377,6 +377,16 @@ export class MissionManager {
       });
     }
 
+    if (mission.id === 'mission-09') {
+      // The manager's "one more small thing" call that Kfir is free to ignore.
+      this.phone.triggerIncomingCall({
+        ...CALL_SCENARIOS.shift_manager,
+        onAnswer: () => {
+          this.phone.setActiveThread('work');
+        },
+      });
+    }
+
     if (mission.openingDialogue && !this.dialogue.isActive()) {
       this.dialogue.start(
         this.localize(mission.openingDialogue.titleKey, mission.openingDialogue.title),
@@ -501,6 +511,8 @@ export class MissionManager {
       this.phone.deliverShiranMilestone('m5-complete');
     } else if (mission.id === 'mission-06') {
       this.phone.deliverFriendsMilestone('m6-complete');
+    } else if (mission.id === 'mission-07') {
+      this.phone.deliverShiranMilestone('m7-complete');
     }
 
     const isCampaignEnd = this.missionIndex + 1 >= this.missions.length;

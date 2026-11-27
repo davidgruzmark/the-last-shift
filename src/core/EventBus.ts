@@ -2,6 +2,8 @@ import type { GraphicsQuality } from '../config/graphicsPresets';
 
 export type PlayerAnimState = 'idle' | 'walk' | 'run' | 'sprint' | 'jump';
 
+export type SteakDoneness = 'rare' | 'mediumRare' | 'medium' | 'mediumWell' | 'wellDone';
+
 export interface GameEvents {
   'player:stateChanged': { state: PlayerAnimState; grounded: boolean };
   'graphics:changed': { quality: GraphicsQuality };
@@ -17,6 +19,15 @@ export interface GameEvents {
   'input:headlights': Record<string, never>;
   'input:cancel': Record<string, never>;
   'save:resetRequested': Record<string, never>;
+  'steak:stateChanged': {
+    visible: boolean;
+    phase: 'idle' | 'cooking' | 'ended';
+    doneness: number;
+    targetDoneness: SteakDoneness;
+    currentZone: SteakDoneness | 'raw' | 'burnt';
+    result: 'perfect' | 'good' | 'miss' | null;
+    attempts: number;
+  };
   'football:stateChanged': {
     visible: boolean;
     phase: 'idle' | 'active' | 'goal_pause' | 'ended';

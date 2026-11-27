@@ -1830,3 +1830,116 @@ body {
     top: 288px;
   }
 }
+
+/* ===== Mission 07: Steak Emergency cooking overlay ===== */
+.steak-card {
+  width: min(440px, calc(100vw - 48px));
+  padding: 22px 24px 24px;
+}
+
+.steak-target-line {
+  margin: 10px 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffd94d;
+}
+
+.steak-gauge {
+  position: relative;
+  height: 26px;
+  border-radius: 13px;
+  overflow: hidden;
+  background: rgba(12, 18, 32, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.steak-gauge-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  opacity: 0.45;
+}
+
+.steak-zone-raw { background: #5b7395; }
+.steak-zone-rare { background: #e05252; }
+.steak-zone-mediumRare { background: #e07a3f; }
+.steak-zone-medium { background: #d9a441; }
+.steak-zone-mediumWell { background: #9c6b3d; }
+.steak-zone-wellDone { background: #6b4a33; }
+.steak-zone-burnt { background: #2b2b2b; }
+
+.steak-gauge-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 217, 77, 0.55));
+  transition: width 120ms linear;
+}
+
+.steak-gauge-needle {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  margin-left: -1px;
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
+  transition: left 120ms linear;
+}
+
+.steak-zone-label {
+  margin-top: 8px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+
+.steak-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.steak-flip-btn {
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px 22px;
+  background: linear-gradient(135deg, #ffda1a, #f5a623);
+  color: #1a2436;
+  border: none;
+}
+
+.steak-flip-btn:disabled {
+  opacity: 0.45;
+}
+
+.steak-result-card {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  text-align: center;
+  background: rgba(224, 82, 82, 0.16);
+  border: 1px solid rgba(224, 82, 82, 0.5);
+}
+
+.steak-result-card.steak-result-success {
+  background: rgba(46, 204, 113, 0.16);
+  border-color: rgba(46, 204, 113, 0.55);
+}
+
+.steak-result-title {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.steak-result-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}

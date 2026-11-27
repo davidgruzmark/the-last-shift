@@ -10,6 +10,7 @@ export type ActiveOverlay =
   | 'phone'
   | 'collection'
   | 'settings'
+  | 'steak'
   | 'mission_complete';
 
 export interface GameState {

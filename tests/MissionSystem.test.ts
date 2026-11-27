@@ -256,7 +256,10 @@ describe('Phase 4.1 MissionSystem Campaign & Physics (Missions 01–04)', () => 
     expect(collectibles.hasCollected('personal-football')).toBe(true);
 
     mm.continueAfterCompletion();
-    expect(mm.getStatus()).toBe('campaign_complete');
+    // The campaign continues into Mission 07 (Missions 07-09 were added with the
+    // campaign finale); full end-to-end completion is covered by CampaignFinale tests.
+    expect(mm.getStatus()).toBe('active');
+    expect(mm.getActiveMission()?.id).toBe('mission-07');
     expect(mm.getSnapshot().completedMissions).toEqual([
       'mission-01',
       'mission-02',

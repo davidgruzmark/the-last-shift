@@ -128,6 +128,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'item.watch-tag-carrera': 'TAG Heuer Carrera Chronograph',
     'item.watch-omega-seamaster': 'Omega Seamaster Diver 300M',
     'item.personal-football': 'Personal Football',
+    'item.golden-steak': 'Golden Steak',
 
     // Dialogue & Computer Terminal UI
     'dialogue.next': 'Next (E)',
@@ -280,6 +281,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'speaker.AVI (SECURITY)': 'AVI (SECURITY)',
     'speaker.OMER (SECURITY)': 'OMER (SECURITY)',
     'speaker.KFIR': 'KFIR',
+    'speaker.SHIRAN': 'SHIRAN',
     'speaker.SHIFT MANAGER': 'SHIFT MANAGER',
     'speaker.YOSSI': 'YOSSI',
     'speaker.SECURITY SYSTEM': 'SECURITY SYSTEM',
@@ -340,6 +342,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'mprop.m5-jpg-le-male-bottle': 'PRESS E TO COLLECT JPG LE MALE LE PARFUM',
     'mprop.m6-warehouse-ball': 'PRESS E TO PICK UP SOCCER BALL',
     'mprop.m6-start-match': 'PRESS E TO START FIFA AT IKEA MATCH',
+    'mprop.m7-steak-pan': 'PRESS E TO GRAB THE PAN AND START COOKING',
+    'mprop.m8-breach-panel': 'PRESS E TO INSPECT ELECTRICAL PANEL',
+    'mprop.m8-gate-control': 'PRESS E TO SECURE DELIVERY GATE',
 
     // Football Mini-Game (M06)
     'football.league': 'IKEA CUP 1V1',
@@ -446,6 +451,75 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'm6.obj.startMatch': 'Head to the Parking Lot IKEA Mini-Pitch and challenge Yossi',
     'm6.obj.winMatch': 'Win the 1v1 football match (Kick: F · Pass: G)',
     'm6.complete': 'KFIR WINS! Personal Football unlocked for Parking Lot free play!',
+
+    // Mission 07 — Steak Emergency
+    'm7.title': 'STEAK EMERGENCY',
+    'm7.desc':
+      'Someone left a ribeye on a live pan in the F2 Restaurant kitchen. Save the steak, earn the Golden Steak.',
+    'm7.phone':
+      'Kfir, someone abandoned a steak on a hot pan in the Restaurant kitchen. It is seconds from burning. You are the closest fork.',
+    'm7.obj.reachKitchen': 'Head up to the F2 Restaurant kitchen',
+    'm7.obj.startCooking': 'Grab the pan and start cooking the steak',
+    'm7.obj.cookMedium': 'Cook the steak to a perfect MEDIUM (Flip & Serve with E)',
+    'm7.cookDone.1':
+      'Butter, garlic, rosemary, and a perfect medium sear. Somewhere a chef just felt a disturbance.',
+    'm7.complete': 'STEAK SAVED! Golden Steak added to your collection.',
+
+    // Mission 08 — Security Breach
+    'm8.title': 'SECURITY BREACH',
+    'm8.desc':
+      'A priority security alert sends Kfir sweeping cameras, store zones and the delivery gate to find the breach.',
+    'm8.phone':
+      'PRIORITY ALERT: perimeter fault detected. Patrol protocol initiated. All zones must be verified.',
+    'm8.obj.cam02': 'Review CAM 02 (Parking Lot) on the control desk computer',
+    'm8.obj.sweepCheckout': 'Sweep the Main Entrance and Checkout area',
+    'm8.obj.checkPanel': 'Inspect the tripped electrical panel in the Warehouse',
+    'm8.obj.reachGate': 'Head to the Parking Lot delivery gate',
+    'm8.obj.secureGate': 'Secure the delivery gate control box',
+    'm8.gateDone.1':
+      'The big security breach... is a delivery gate someone left unlatched. My whole patrol for a latch.',
+    'm8.gateDone.2': 'Great work, Kfir. Protocol is protocol. Logging the incident as resolved.',
+    'm8.complete': 'BREACH SECURED. The store is safe, and the gate is finally latched.',
+
+    // Mission 09 — The Last Shift
+    'm9.title': 'THE LAST SHIFT',
+    'm9.desc':
+      'The shift is over, Shiran is waiting, and the manager has "one more small thing". Clock out, reach the car and drive home.',
+    'm9.obj.clockOut': 'Clock out at the control room desk and ignore the phone',
+    'm9.obj.reachCar': 'Get to your car in the Parking Lot',
+    'm9.obj.driveHome': 'Drive home to Shiran',
+    'm9.clockOut.1':
+      'Shift log closed, radio docked, phone on silent. Sorry boss, whatever it is can wait for tomorrow.',
+    'm9.end.1': 'Finally! I was starting to think you live at IKEA.',
+    'm9.end.2': 'Long shift. But I brought stories, and I am flipping the steaks tonight.',
+    'm9.end.3': 'Come in then, hero of the warehouse. Dinner is on me this time.',
+    'm9.complete': 'KFIR HAS SURVIVED ANOTHER SHIFT. RESPECT +1000',
+
+    // Steak Emergency minigame UI
+    'steak.tag': 'M07 · RESTAURANT KITCHEN',
+    'steak.title': 'STEAK EMERGENCY',
+    'steak.targetLine': 'Target doneness: {target}',
+    'steak.flipServe': 'FLIP & SERVE (E)',
+    'steak.retry': 'TRY AGAIN',
+    'steak.close': 'SERVE IT',
+    'steak.doneness.rare': 'RARE',
+    'steak.doneness.mediumRare': 'MEDIUM RARE',
+    'steak.doneness.medium': 'MEDIUM',
+    'steak.doneness.mediumWell': 'MEDIUM WELL',
+    'steak.doneness.wellDone': 'WELL DONE',
+    'steak.zone.raw': 'RAW — still mooing',
+    'steak.zone.rare': 'RARE',
+    'steak.zone.mediumRare': 'MEDIUM RARE',
+    'steak.zone.medium': 'MEDIUM — bullseye!',
+    'steak.zone.mediumWell': 'MEDIUM WELL',
+    'steak.zone.wellDone': 'WELL DONE',
+    'steak.zone.burnt': 'BURNT!',
+    'steak.result.perfect.title': 'PERFECT SEAR!',
+    'steak.result.perfect.sub': 'Butter-basted, garlic-kissed, exactly MEDIUM. Chef Kfir approved.',
+    'steak.result.good.title': 'STEAK SAVED',
+    'steak.result.good.sub': 'Solid MEDIUM. Not a photo shoot, but absolutely delicious.',
+    'steak.result.miss.title': 'NOT QUITE...',
+    'steak.result.miss.sub': 'Wrong doneness. Fire up another steak and hit MEDIUM this time.',
   },
 
   he: {
@@ -575,6 +649,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'item.watch-tag-carrera': 'TAG Heuer Carrera Chronograph',
     'item.watch-omega-seamaster': 'Omega Seamaster Diver 300M',
     'item.personal-football': 'כדורגל אישי',
+    'item.golden-steak': 'סטייק זהב',
 
     // Dialogue & Computer Terminal UI
     'dialogue.next': 'הבא (E)',
@@ -727,6 +802,7 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'speaker.AVI (SECURITY)': 'אבי (אבטחה)',
     'speaker.OMER (SECURITY)': 'עומר (אבטחה)',
     'speaker.KFIR': 'כפיר',
+    'speaker.SHIRAN': 'שירן',
     'speaker.SHIFT MANAGER': 'מנהל משמרת',
     'speaker.YOSSI': 'יוסי',
     'speaker.SECURITY SYSTEM': 'מערכת אבטחה',
@@ -787,6 +863,9 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'mprop.m5-jpg-le-male-bottle': 'לחץ E לאיסוף JPG Le Male Le Parfum',
     'mprop.m6-warehouse-ball': 'לחץ E לאיסוף כדורגל',
     'mprop.m6-start-match': 'לחץ E להתחלת משחק FIFA באיקאה',
+    'mprop.m7-steak-pan': 'לחץ E כדי לתפוס את המחבת ולהתחיל לבשל',
+    'mprop.m8-breach-panel': 'לחץ E לבדיקת לוח החשמל',
+    'mprop.m8-gate-control': 'לחץ E לנעילת שער המשלוחים',
 
     // Football Mini-Game (M06)
     'football.league': 'גביע איקאה 1 על 1',
@@ -893,5 +972,74 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'm6.obj.startMatch': 'הגע למגרש המיני-פיץ׳ בחניון והתחל משחק מול יוסי',
     'm6.obj.winMatch': 'נצח במשחק 1 על 1 (בעיטה: F · מסירה: G)',
     'm6.complete': 'KFIR WINS! קיבלת כדורגל אישי למשחק חופשי בחניון!',
+
+    // Mission 07 — Steak Emergency
+    'm7.title': 'חירום סטייק',
+    'm7.desc':
+      'מישהו השאיר אנטריקוט על מחבת דולקת במטבח המסעדה בקומה 2. הצל את הסטייק, קבל את סטייק הזהב.',
+    'm7.phone':
+      'כפיר, מישהו זרק סטייק על מחבת חמה במטבח של המסעדה. הוא עוד שניות נשרף. אתה המזלג הכי קרוב.',
+    'm7.obj.reachKitchen': 'עלה למטבח של המסעדה בקומה 2',
+    'm7.obj.startCooking': 'תפוס את המחבת והתחל לבשל את הסטייק',
+    'm7.obj.cookMedium': 'בשל את הסטייק ל-MEDIUM מושלם (היפוך והגשה עם E)',
+    'm7.cookDone.1':
+      'חמאה, שום, רוזמרין וצליית מדיום מושלמת. איפשהו שף הרגיש עכשיו הפרעה בכוח.',
+    'm7.complete': 'הסטייק ניצל! סטייק הזהב נוסף לאוסף שלך.',
+
+    // Mission 08 — Security Breach
+    'm8.title': 'פרצת אבטחה',
+    'm8.desc':
+      'התרעת אבטחה בכפוף עדיפות שולחת את כפיר לסרוק מצלמות, אזורי חנות ואת שער המשלוחים כדי לאתר את הפרצה.',
+    'm8.phone':
+      'התרעת עדיפות: זוהתה תקלת היקף. פרוטוקול סיור הופעל. יש לאמת את כל האזורים.',
+    'm8.obj.cam02': 'בדוק את מצלמה 02 (חניון) במחשב עמדת הבקרה',
+    'm8.obj.sweepCheckout': 'סרוק את אזור הכניסה הראשית והקופות',
+    'm8.obj.checkPanel': 'בדוק את לוח החשמל שקפץ במחסן',
+    'm8.obj.reachGate': 'צא לשער המשלוחים בחניון',
+    'm8.obj.secureGate': 'נעל את ארון הבקרה של שער המשלוחים',
+    'm8.gateDone.1':
+      'פרצת האבטחה הגדולה... זה שער משלוחים שמישהו לא נעל. כל הסיור שלי בגלל תפס.',
+    'm8.gateDone.2': 'עבודה יפה כפיר. נוהל הוא נוהל. מתעד את האירוע כטופל.',
+    'm8.complete': 'הפרצה נחסמה. החנות בטוחה, והשער סוף סוף נעול.',
+
+    // Mission 09 — The Last Shift
+    'm9.title': 'המשמרת האחרונה',
+    'm9.desc':
+      'המשמרת נגמרה, שירן מחכה, ולמנהל יש "עוד משהו קטן". תתחשבן, תגיע לאוטו ותיסע הביתה.',
+    'm9.obj.clockOut': 'התחשבן בעמדת הבקרה והתעלם מהטלפון',
+    'm9.obj.reachCar': 'הגיע לאוטו שלך בחניון',
+    'm9.obj.driveHome': 'סע הביתה לשירן',
+    'm9.clockOut.1':
+      'יומן משמרת נסגר, קשר בעמדה, טלפון על שקט. סליחה בוס, מה שיהיה יחכה למחר.',
+    'm9.end.1': 'סוף סוף! התחלתי לחשוב שאתה גר באיקאה.',
+    'm9.end.2': 'משמרת ארוכה. אבל הבאתי סיפורים, והלילה אני הופך את הסטייקים.',
+    'm9.end.3': 'בוא הביתה, גיבור המחסן. הפעם הארוחה עליי.',
+    'm9.complete': 'כפיר שרד עוד משמרת. כבוד +1000',
+
+    // Steak Emergency minigame UI
+    'steak.tag': 'M07 · מטבח המסעדה',
+    'steak.title': 'חירום סטייק',
+    'steak.targetLine': 'דרגת צלייה יעד: {target}',
+    'steak.flipServe': 'היפוך והגשה (E)',
+    'steak.retry': 'נסה שוב',
+    'steak.close': 'הגש',
+    'steak.doneness.rare': 'רייר',
+    'steak.doneness.mediumRare': 'מדיום רייר',
+    'steak.doneness.medium': 'מדיום',
+    'steak.doneness.mediumWell': 'מדיום וול',
+    'steak.doneness.wellDone': 'עשוי היטב',
+    'steak.zone.raw': 'נא — עדיין מכרקר',
+    'steak.zone.rare': 'רייר',
+    'steak.zone.mediumRare': 'מדיום רייר',
+    'steak.zone.medium': 'מדיום — בול במטרה!',
+    'steak.zone.mediumWell': 'מדיום וול',
+    'steak.zone.wellDone': 'עשוי היטב',
+    'steak.zone.burnt': 'שרוף!',
+    'steak.result.perfect.title': 'צלייה מושלמת!',
+    'steak.result.perfect.sub': 'מזוקק בחמאה, נשיקת שום, מדיום בדיוק. שף כפיר מאשר.',
+    'steak.result.good.title': 'הסטייק ניצל',
+    'steak.result.good.sub': 'מדיום מוצק. לא לצילומים, אבל טעים בטירוף.',
+    'steak.result.miss.title': 'לא בדיוק...',
+    'steak.result.miss.sub': 'דרגת צלייה שגויה. שים עוד סטייק על האש ותפגע במדיום הפעם.',
   },
 };
