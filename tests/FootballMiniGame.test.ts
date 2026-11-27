@@ -7,6 +7,7 @@ import { EventBus, type GameEvents } from '../src/core/EventBus';
 import { i18n } from '../src/i18n/LocalizationManager';
 import { InteractionManager } from '../src/interaction/InteractionManager';
 import {
+  FOOTBALL_AI_BALANCE,
   FOOTBALL_MATCH_DURATION,
   FOOTBALL_PITCH_BOUNDS,
   FOOTBALL_WIN_GOALS,
@@ -349,5 +350,133 @@ describe('Phase 6.3 FIFA at IKEA Football Mini-Game (Mission 06)', () => {
       if (prevWin === undefined) delete (globalThis as Record<string, unknown>).window;
       else (globalThis as Record<string, unknown>).window = prevWin;
     }
+  });
+
+  it('gives Kfir a contest grace window, lets angled shots beat Yossi, yet keeps Yossi dangerous enough to win if unguarded', () => {
+    const { mm, football } = setupFootballTest();
+    mm.startCampaign(5);
+    mm.notifyInteract('m6-warehouse-ball');
+    football.startMatch();
+    mm.notifyInteract('m6-start-match');
+
+    // Clear initial kickoff cooldown cleanly before setting up contest spot
+    football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.maxZ - 2.0);
+    football.ballVelocity.set(0, 0, 0);
+    for (let i = 0; i < 25; i++) {
+      football.update(
+        0.05,
+        new THREE.Vector3(FOOTBALL_PITCH_BOUNDS.centerX, 0, FOOTBALL_PITCH_BOUNDS.maxZ - 1.0),
+        new THREE.Vector3(),
+      );
+    }
+
+    // 1. Contest window: when Kfir is right on the ball (<2.2m), Yossi does not instant-steal in first frames
+    football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.centerZ);
+    football.ballVelocity.set(0, 0, 0);
+    football.opponentPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0, FOOTBALL_PITCH_BOUNDS.centerZ - 0.65);
+    const closeKfir = new THREE.Vector3(
+      FOOTBALL_PITCH_BOUNDS.centerX + 0.85,
+      0,
+      FOOTBALL_PITCH_BOUNDS.centerZ + 0.75,
+    );
+    football.update(0.05, closeKfir, new THREE.Vector3());
+    expect(football.getOpponentAIState()).not.toBe('shoot');
+
+    // After holding inside tackle range beyond contestDelaySec, Yossi commits to the challenge
+    let yossiShot = false;
+    for (let i = 0; i < 10; i++) {
+      football.update(0.05, closeKfir, new THREE.Vector3());
+      if (football.getOpponentAIState() === 'shoot') yossiShot = true;
+    }
+    expect(yossiShot).toBe(true);
+    expect(football.ballVelocity.z).toBeGreaterThan(FOOTBALL_AI_BALANCE.shootSpeed * 0.65);
+
+    // 2. Angled shot from mid-pitch beats Yossi into the far corner when Yossi guards near post
+    football.restartMatch();
+    const attackerPos = new THREE.Vector3(
+      FOOTBALL_PITCH_BOUNDS.centerX + 2.4,
+      0,
+      FOOTBALL_PITCH_BOUNDS.centerZ + 0.9,
+    );
+    football.ballPosition.set(
+      FOOTBALL_PITCH_BOUNDS.centerX + 2.2,
+      0.24,
+      FOOTBALL_PITCH_BOUNDS.centerZ + 0.2,
+    );
+    football.opponentPosition.set(
+      FOOTBALL_PITCH_BOUNDS.centerX + 1.15,
+      0,
+      FOOTBALL_PITCH_BOUNDS.opponentGoalZ + 2.0,
+    );
+    const cornerAim = new THREE.Vector3(
+      FOOTBALL_PITCH_BOUNDS.centerX - 1.25 - football.ballPosition.x,
+      0,
+      FOOTBALL_PITCH_BOUNDS.opponentGoalZ - football.ballPosition.z,
+    ).normalize();
+    expect(football.kick(attackerPos, cornerAim)).toBe(true);
+    for (let i = 0; i < 35; i++) {
+      football.update(0.03, attackerPos, new THREE.Vector3());
+    }
+    expect(football.getSnapshot().kfirScore).toBe(1);
+
+    // 3. Uncontested Yossi shots have credible speed (between 6.5 and 9.6), realistic spread, and >=2.0s cooldown
+    const shotVxValues: number[] = [];
+    const farKfir = new THREE.Vector3(FOOTBALL_PITCH_BOUNDS.centerX, 0, FOOTBALL_PITCH_BOUNDS.maxZ - 0.8);
+    for (let s = 0; s < 12; s++) {
+      football.restartMatch();
+      for (let i = 0; i < 25; i++) {
+        football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.maxZ - 1.5);
+        football.ballVelocity.set(0, 0, 0);
+        football.update(0.05, farKfir, new THREE.Vector3());
+      }
+      football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.centerZ);
+      football.ballVelocity.set(0, 0, 0);
+      football.opponentPosition.set(
+        FOOTBALL_PITCH_BOUNDS.centerX,
+        0,
+        FOOTBALL_PITCH_BOUNDS.centerZ - 0.8,
+      );
+      football.update(0.016, farKfir, new THREE.Vector3());
+      expect(football.getOpponentAIState()).toBe('shoot');
+      const horizSpeed = Math.hypot(football.ballVelocity.x, football.ballVelocity.z);
+      expect(horizSpeed).toBeGreaterThanOrEqual(6.5);
+      expect(horizSpeed).toBeLessThanOrEqual(9.6);
+      shotVxValues.push(Number(football.ballVelocity.x.toFixed(2)));
+
+      if (s === 0) {
+        // Cooldown prevents instant double-shoot within 1.9s
+        football.ballPosition.set(FOOTBALL_PITCH_BOUNDS.centerX, 0.24, FOOTBALL_PITCH_BOUNDS.centerZ);
+        football.ballVelocity.set(0, 0, 0);
+        football.opponentPosition.set(
+          FOOTBALL_PITCH_BOUNDS.centerX,
+          0,
+          FOOTBALL_PITCH_BOUNDS.centerZ - 0.8,
+        );
+        football.update(0.016, farKfir, new THREE.Vector3());
+        expect(football.getOpponentAIState()).not.toBe('shoot');
+      }
+    }
+    expect(new Set(shotVxValues).size).toBeGreaterThanOrEqual(4);
+
+    // 4. Leaving Kfir's goal unguarded allows Yossi to score and win, and restartMatch resets cleanly
+    football.restartMatch();
+    const sidelineSpectator = new THREE.Vector3(
+      FOOTBALL_PITCH_BOUNDS.minX + 0.8,
+      0,
+      FOOTBALL_PITCH_BOUNDS.centerZ,
+    );
+    for (let step = 0; step < 1240; step++) {
+      football.update(0.05, sidelineSpectator, new THREE.Vector3());
+      if (football.getSnapshot().phase === 'ended') break;
+    }
+    expect(football.getSnapshot().opponentScore).toBeGreaterThan(0);
+    expect(football.getSnapshot().phase).toBe('ended');
+    expect(football.getSnapshot().winner).toBe('opponent');
+
+    football.restartMatch();
+    expect(football.getSnapshot().phase).toBe('active');
+    expect(football.getSnapshot().kfirScore).toBe(0);
+    expect(football.getSnapshot().opponentScore).toBe(0);
+    expect(football.getSnapshot().timeRemaining).toBe(FOOTBALL_MATCH_DURATION);
   });
 });

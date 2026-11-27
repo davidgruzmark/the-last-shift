@@ -47,6 +47,36 @@ const OPPONENT_BODY_HEIGHT = 1.75;
 const PLAYER_BODY_RADIUS = 0.42;
 const PLAYER_BODY_HEIGHT = 1.75;
 
+/**
+ * Tuned balance parameters for Yossi's 1v1 AI so an average player can retain
+ * possession, beat him with angled shots or feints, and win with fair effort
+ * while keeping Yossi a credible threat when left unguarded.
+ */
+export const FOOTBALL_AI_BALANCE = {
+  shootRange: 1.15,
+  shootSpeed: 9.4,
+  kickCooldownSec: 2.15,
+  kickoffCooldownSec: 1.15,
+  contestRange: 2.2,
+  contestDelaySec: 0.22,
+  interceptTriggerVz: -3.2,
+  interceptResetVz: -2.0,
+  interceptMaxZOffset: 2.2,
+  interceptDelaySec: 0.22,
+  interceptShadowSpeed: 2.6,
+  interceptSpeed: 3.35,
+  interceptAimErrorRange: 1.3,
+  attackMaxZOffset: 1.2,
+  attackLooseBallSpeedThreshold: 1.6,
+  attackContestSpeed: 2.9,
+  attackLooseSpeed: 4.0,
+  defendSpeed: 2.8,
+  defendTrackWeight: 0.65,
+  defendMaxLateralOffset: 2.1,
+  defendDepthFromGoal: 2.4,
+  maxAccel: 13.0,
+} as const;
+
 class PitchInteractable implements Interactable {
   readonly id: string;
   readonly type = 'interact' as const;
@@ -172,6 +202,11 @@ export class FootballMiniGame {
   private opponentKickAnim = 0;
   private opponentKickIgnoreTimer = 0;
   private opponentDeflections = 0;
+  private opponentInterceptDelayTimer = 0;
+  private opponentInterceptAimError = 0;
+  private opponentInterceptTracking = false;
+  private opponentContestDelayTimer = 0;
+  private readonly opponentMoveVel = new THREE.Vector2(0, 0);
   private dribbleCooldown = 0;
   private lastBallInRange = false;
   private lastEmitSec = -1;
@@ -431,7 +466,12 @@ export class FootballMiniGame {
     this.opponentAIState = 'defend';
     this.opponentKickAnim = 0;
     this.opponentKickIgnoreTimer = 0;
-    this.opponentKickCooldown = 1.1;
+    this.opponentKickCooldown = FOOTBALL_AI_BALANCE.kickoffCooldownSec;
+    this.opponentInterceptDelayTimer = 0;
+    this.opponentInterceptAimError = 0;
+    this.opponentInterceptTracking = false;
+    this.opponentContestDelayTimer = 0;
+    this.opponentMoveVel.set(0, 0);
   }
 
   /** Kicks the ball along the camera's horizontal gaze direction if Kfir is within strike range. */
@@ -580,78 +620,146 @@ export class FootballMiniGame {
 
   private updateOpponentAI(dt: number, playerPos: THREE.Vector3): void {
     const { minX, maxX, centerX, centerZ, opponentGoalZ, kfirGoalZ } = FOOTBALL_PITCH_BOUNDS;
+    const B = FOOTBALL_AI_BALANCE;
     const ballSpeed = Math.hypot(this.ballVelocity.x, this.ballVelocity.z);
     const ballDist = Math.hypot(
       this.ballPosition.x - this.opponentPosition.x,
       this.ballPosition.z - this.opponentPosition.z,
     );
+    const kfirBallDist = Math.hypot(
+      this.ballPosition.x - playerPos.x,
+      this.ballPosition.z - playerPos.z,
+    );
+    const isContested = kfirBallDist < B.contestRange;
 
-    let speed = 4.0;
+    // Reset incoming-shot reaction lock once ball stops travelling quickly North
+    if (this.ballVelocity.z >= B.interceptResetVz) {
+      this.opponentInterceptTracking = false;
+      this.opponentInterceptDelayTimer = 0;
+    }
+
+    let speed: number = B.defendSpeed;
     let targetX: number = centerX;
-    let targetZ: number = opponentGoalZ + 2.3;
+    let targetZ: number = opponentGoalZ + B.defendDepthFromGoal;
 
-    if (ballDist < 1.25 && this.opponentKickCooldown <= 0 && this.ballPosition.y < 1.0) {
-      // Strike toward Kfir's goal or clear corner balls cleanly inward without self-blocking
+    const inShootRange =
+      ballDist < B.shootRange && this.opponentKickCooldown <= 0 && this.ballPosition.y < 1.0;
+
+    let shootReady = false;
+    if (inShootRange) {
+      if (!isContested) {
+        shootReady = true;
+      } else {
+        this.opponentContestDelayTimer += dt;
+        if (this.opponentContestDelayTimer >= B.contestDelaySec) {
+          shootReady = true;
+        }
+      }
+    } else {
+      this.opponentContestDelayTimer = Math.max(0, this.opponentContestDelayTimer - dt * 1.5);
+    }
+
+    if (shootReady) {
+      // Strike toward Kfir's goal with imperfect placement, or clear South corners cleanly inward
       this.opponentAIState = 'shoot';
-      const openSideOffset = playerPos.x >= centerX ? -0.95 : 0.95;
+      this.opponentContestDelayTimer = 0;
       const inSouthCorner = this.ballPosition.z > kfirGoalZ - 1.4;
+      const biasToOpen = Math.random() < 0.4;
+      const openSideOffset = playerPos.x >= centerX ? -0.65 : 0.65;
+      const spread = biasToOpen
+        ? (Math.random() - 0.5) * 2.0
+        : (Math.random() - 0.5) * 2.3;
+      const targetShotX = THREE.MathUtils.clamp(
+        centerX + (biasToOpen ? openSideOffset : 0) + spread,
+        minX + 0.9,
+        maxX - 0.9,
+      );
       const aimX = inSouthCorner
         ? centerX - this.ballPosition.x
-        : centerX + openSideOffset + (Math.random() - 0.5) * 0.45 - this.ballPosition.x;
+        : targetShotX - this.ballPosition.x;
       const aimZ = inSouthCorner
         ? centerZ + 2.0 - this.ballPosition.z
         : kfirGoalZ - this.ballPosition.z;
       const len = Math.max(0.1, Math.hypot(aimX, aimZ));
-      this.ballVelocity.set((aimX / len) * 10.6, 1.75, (aimZ / len) * 10.6);
-      this.opponentKickCooldown = 1.45;
+      this.ballVelocity.set((aimX / len) * B.shootSpeed, 1.55, (aimZ / len) * B.shootSpeed);
+      this.opponentKickCooldown = B.kickCooldownSec;
       this.opponentKickIgnoreTimer = 0.22;
       this.opponentKickAnim = 0.28;
       targetX = this.ballPosition.x;
       targetZ = this.ballPosition.z - 0.35;
-      speed = 4.4;
+      speed = B.attackLooseSpeed;
     } else if (
-      this.ballVelocity.z < -2.2 &&
-      this.ballPosition.z < centerZ + 3.5 &&
+      this.ballVelocity.z < B.interceptTriggerVz &&
+      this.ballPosition.z < centerZ + B.interceptMaxZOffset &&
       this.ballPosition.z > opponentGoalZ + 0.4
     ) {
-      // Intercept incoming shot by predicting ball trajectory along opponent's Z depth
+      // Intercept incoming shot with human-like reaction delay and modest lateral misread
       this.opponentAIState = 'intercept';
-      const timeToReach = THREE.MathUtils.clamp(
-        (this.opponentPosition.z - this.ballPosition.z) / this.ballVelocity.z,
-        0,
-        0.75,
-      );
-      targetX = THREE.MathUtils.clamp(
-        this.ballPosition.x + this.ballVelocity.x * timeToReach,
-        minX + 0.9,
-        maxX - 0.9,
-      );
-      targetZ = THREE.MathUtils.clamp(
-        this.ballPosition.z + this.ballVelocity.z * timeToReach * 0.45,
-        opponentGoalZ + 0.9,
-        centerZ + 1.5,
-      );
-      speed = 5.0;
-    } else if (this.ballPosition.z <= centerZ + 2.5 || ballSpeed < 2.4) {
-      // Press & attack loose balls or threats anywhere in pitch (including all 4 corners)
+      if (!this.opponentInterceptTracking) {
+        this.opponentInterceptTracking = true;
+        this.opponentInterceptDelayTimer = B.interceptDelaySec;
+        this.opponentInterceptAimError = (Math.random() - 0.5) * B.interceptAimErrorRange;
+      }
+      if (this.opponentInterceptDelayTimer > 0) {
+        this.opponentInterceptDelayTimer = Math.max(0, this.opponentInterceptDelayTimer - dt);
+        targetX = THREE.MathUtils.clamp(
+          this.ballPosition.x * B.defendTrackWeight + centerX * (1 - B.defendTrackWeight),
+          centerX - B.defendMaxLateralOffset,
+          centerX + B.defendMaxLateralOffset,
+        );
+        targetZ = opponentGoalZ + B.defendDepthFromGoal;
+        speed = B.interceptShadowSpeed;
+      } else {
+        const timeToReach = THREE.MathUtils.clamp(
+          (this.opponentPosition.z - this.ballPosition.z) / this.ballVelocity.z,
+          0,
+          0.7,
+        );
+        targetX = THREE.MathUtils.clamp(
+          this.ballPosition.x + this.ballVelocity.x * timeToReach + this.opponentInterceptAimError,
+          minX + 0.9,
+          maxX - 0.9,
+        );
+        targetZ = THREE.MathUtils.clamp(
+          this.ballPosition.z + this.ballVelocity.z * timeToReach * 0.42,
+          opponentGoalZ + 0.9,
+          centerZ + 1.5,
+        );
+        speed = B.interceptSpeed;
+      }
+    } else if (
+      this.ballPosition.z <= centerZ + B.attackMaxZOffset ||
+      (ballSpeed < B.attackLooseBallSpeedThreshold && this.ballPosition.z <= kfirGoalZ - 0.15)
+    ) {
+      // Press & attack loose balls or threats cleanly (plant/jockey briefly during contest delay)
       this.opponentAIState = 'attack';
-      targetX = THREE.MathUtils.clamp(this.ballPosition.x, minX + 0.65, maxX - 0.65);
-      targetZ = THREE.MathUtils.clamp(
-        this.ballPosition.z - 0.35,
-        opponentGoalZ + 0.65,
-        kfirGoalZ - 0.65,
-      );
-      speed = 4.2;
+      if (inShootRange && isContested) {
+        targetX = THREE.MathUtils.clamp(this.ballPosition.x, minX + 0.65, maxX - 0.65);
+        targetZ = THREE.MathUtils.clamp(
+          this.ballPosition.z - 0.82,
+          opponentGoalZ + 0.65,
+          kfirGoalZ - 0.65,
+        );
+        speed = 0.8;
+      } else {
+        targetX = THREE.MathUtils.clamp(this.ballPosition.x, minX + 0.65, maxX - 0.65);
+        targetZ = THREE.MathUtils.clamp(
+          this.ballPosition.z - 0.35,
+          opponentGoalZ + 0.65,
+          kfirGoalZ - 0.65,
+        );
+        speed = isContested ? B.attackContestSpeed : B.attackLooseSpeed;
+      }
     } else {
-      // Active defensive jockey tracking ball lateral position
+      // Measured defensive jockey tracking ball lateral position without covering entire goal instantly
       this.opponentAIState = 'defend';
       targetX = THREE.MathUtils.clamp(
-        this.ballPosition.x * 0.8 + centerX * 0.2,
-        centerX - 2.6,
-        centerX + 2.6,
+        this.ballPosition.x * B.defendTrackWeight + centerX * (1 - B.defendTrackWeight),
+        centerX - B.defendMaxLateralOffset,
+        centerX + B.defendMaxLateralOffset,
       );
-      targetZ = opponentGoalZ + 2.3;
-      speed = 4.0;
+      targetZ = opponentGoalZ + B.defendDepthFromGoal;
+      speed = B.defendSpeed;
     }
 
     const prevX = this.opponentPosition.x;
@@ -659,10 +767,27 @@ export class FootballMiniGame {
     const dx = targetX - this.opponentPosition.x;
     const dz = targetZ - this.opponentPosition.z;
     const dist = Math.hypot(dx, dz);
-    if (dist > 0.05) {
-      const step = Math.min(dist, speed * dt);
-      this.opponentPosition.x += (dx / dist) * step;
-      this.opponentPosition.z += (dz / dist) * step;
+    const desiredVx = dist > 0.05 ? (dx / dist) * speed : 0;
+    const desiredVz = dist > 0.05 ? (dz / dist) * speed : 0;
+    const dvx = desiredVx - this.opponentMoveVel.x;
+    const dvz = desiredVz - this.opponentMoveVel.y;
+    const dvLen = Math.hypot(dvx, dvz);
+    const maxDeltaV = B.maxAccel * dt;
+    if (dvLen > maxDeltaV && dvLen > 1e-5) {
+      this.opponentMoveVel.x += (dvx / dvLen) * maxDeltaV;
+      this.opponentMoveVel.y += (dvz / dvLen) * maxDeltaV;
+    } else {
+      this.opponentMoveVel.set(desiredVx, desiredVz);
+    }
+
+    const stepX = this.opponentMoveVel.x * dt;
+    const stepZ = this.opponentMoveVel.y * dt;
+    if (dist > 0.05 && Math.hypot(stepX, stepZ) > dist) {
+      this.opponentPosition.x = targetX;
+      this.opponentPosition.z = targetZ;
+    } else {
+      this.opponentPosition.x += stepX;
+      this.opponentPosition.z += stepZ;
     }
 
     // Keep solid separation between Kfir and Yossi so characters don't overlap
