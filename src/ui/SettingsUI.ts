@@ -129,6 +129,16 @@ export class SettingsUI {
               </button>
             </div>
           </div>
+
+          <div class="settings-section">
+            <div class="settings-label">${i18n.t('settings.progressTitle')}</div>
+            <p class="settings-desc">${i18n.t('settings.progressDesc')}</p>
+            <div class="settings-btn-row">
+              <button type="button" class="hud-btn settings-choice-btn" id="btn-settings-reset-progress">
+                ${i18n.t('settings.resetProgress')}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -168,6 +178,14 @@ export class SettingsUI {
           void document.documentElement.requestFullscreen?.().catch(() => {});
         } else {
           void document.exitFullscreen?.().catch(() => {});
+        }
+      });
+
+    this.container
+      .querySelector('#btn-settings-reset-progress')!
+      .addEventListener('click', () => {
+        if (window.confirm(i18n.t('settings.resetConfirm'))) {
+          this.eventBus.emit('save:resetRequested', {});
         }
       });
 

@@ -341,4 +341,17 @@ export class WorldCollectionProps {
   getPropCount(): number {
     return this.props.length;
   }
+
+  /**
+   * Hides pickup props whose IDs were already collected in a restored save file,
+   * so reloaded sessions never show ghost collectibles that cannot be picked up.
+   */
+  syncCollectedFromSave(hasCollected: (id: string) => boolean): void {
+    for (const prop of this.props) {
+      if (!prop.state.collected && hasCollected(prop.id)) {
+        prop.state.collected = true;
+        prop.state.meshGroup.visible = false;
+      }
+    }
+  }
 }

@@ -89,6 +89,29 @@ export class MissionManager {
     this.activateMission(clamped);
   }
 
+  /**
+   * Re-applies campaign progress loaded from a save file before the campaign is
+   * started. Restores wallet + completed missions; when every mission is already
+   * done the campaign resumes directly in its completed state.
+   */
+  restoreProgress(money: number, completedMissionIds: readonly string[]): void {
+    if (this.status !== 'idle') return;
+    this.money = Math.max(0, Math.floor(money));
+    const validIds = new Set(this.missions.map((mission) => mission.id));
+    for (const id of completedMissionIds) {
+      if (validIds.has(id)) {
+        this.completedMissionIds.add(id);
+      }
+    }
+    if (
+      this.missions.length > 0 &&
+      this.missions.every((mission) => this.completedMissionIds.has(mission.id))
+    ) {
+      this.status = 'campaign_complete';
+      this.emitState();
+    }
+  }
+
   getStatus(): CampaignStatus {
     return this.status;
   }
@@ -354,6 +377,16 @@ export class MissionManager {
       });
     }
 
+    if (mission.id === 'mission-09') {
+      // The manager's "one more small thing" call that Kfir is free to ignore.
+      this.phone.triggerIncomingCall({
+        ...CALL_SCENARIOS.shift_manager,
+        onAnswer: () => {
+          this.phone.setActiveThread('work');
+        },
+      });
+    }
+
     if (mission.openingDialogue && !this.dialogue.isActive()) {
       this.dialogue.start(
         this.localize(mission.openingDialogue.titleKey, mission.openingDialogue.title),
@@ -478,6 +511,8 @@ export class MissionManager {
       this.phone.deliverShiranMilestone('m5-complete');
     } else if (mission.id === 'mission-06') {
       this.phone.deliverFriendsMilestone('m6-complete');
+    } else if (mission.id === 'mission-07') {
+      this.phone.deliverShiranMilestone('m7-complete');
     }
 
     const isCampaignEnd = this.missionIndex + 1 >= this.missions.length;

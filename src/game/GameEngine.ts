@@ -27,15 +27,18 @@ import { MissionPropsController } from '../missions/MissionPropsController';
 import { ObjectiveMarker } from '../missions/ObjectiveMarker';
 import { ControlRoomStaffingSystem } from '../npcs/ControlRoomStaffingSystem';
 import { FootballMiniGame, FOOTBALL_PITCH_BOUNDS } from '../minigames/FootballMiniGame';
+import { SteakMiniGame } from '../minigames/SteakMiniGame';
 import { PlayerAnimation } from '../player/PlayerAnimation';
 import { PlayerController } from '../player/PlayerController';
 import { CollectionUI } from '../ui/CollectionUI';
 import { FootballUI } from '../ui/FootballUI';
+import { SteakUI } from '../ui/SteakUI';
 import { InteractionUI } from '../ui/InteractionUI';
 import { MissionUI } from '../ui/MissionUI';
 import { PhoneManager } from '../ui/PhoneManager';
 import { PrototypeHUD } from '../ui/PrototypeHUD';
 import { SettingsUI } from '../ui/SettingsUI';
+import { SaveManager } from '../save/SaveManager';
 import { VehicleManager } from '../vehicles/VehicleManager';
 import { CollisionManager } from '../world/CollisionManager';
 import { WORLD_ANCHORS } from '../world/WorldAnchors';
@@ -78,6 +81,8 @@ export class GameEngine {
   private readonly settingsUI: SettingsUI;
   private readonly footballUI: FootballUI;
   private readonly footballMiniGame: FootballMiniGame;
+  private readonly steakMiniGame: SteakMiniGame;
+  private readonly steakUI: SteakUI;
   private readonly perfumeCollection: PerfumeCollection;
   private readonly watchCollection: WatchCollection;
   private readonly collectionProps: WorldCollectionProps;
@@ -98,6 +103,7 @@ export class GameEngine {
   private readonly sunLight: THREE.DirectionalLight;
 
   private rafId = 0;
+  private readonly saveManager = new SaveManager();
   private lastTime = 0;
   private accumulator = 0;
   private fpsSamples = 0;
@@ -244,6 +250,14 @@ export class GameEngine {
     });
     this.scene.add(this.footballMiniGame.group);
 
+    this.steakMiniGame = new SteakMiniGame(
+      this.worldManager.palette,
+      this.interactions,
+      this.missionManager,
+      this.eventBus,
+    );
+    this.scene.add(this.steakMiniGame.group);
+
     this.state.totalCollectibles = this.collectibles.getTotalCount();
     this.state.unreadMessages = this.phone.getUnreadCount();
 
@@ -305,9 +319,11 @@ export class GameEngine {
       () => this.syncOverlayState(),
     );
     this.footballUI = new FootballUI(hudRoot, this.eventBus, this.footballMiniGame);
+    this.steakUI = new SteakUI(hudRoot, this.eventBus, this.steakMiniGame);
     this.applyGraphicsQuality(this.state.graphicsQuality);
 
     this.bindEvents();
+    this.restoreFromSave();
     window.addEventListener('resize', this.handleResize);
 
     // Initial sync so first frame renders properly
@@ -321,8 +337,54 @@ export class GameEngine {
       import.meta.env.DEV &&
       typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('qa') === 'm6';
-    this.missionManager.startCampaign(qaM6 ? 5 : 0);
+    if (qaM6) {
+      this.missionManager.startCampaign(5);
+    } else if (this.missionManager.getStatus() === 'idle') {
+      // Resume at the first unfinished mission (index 0 on a fresh save).
+      const completed = new Set(this.missionManager.getSnapshot().completedMissions);
+      const nextIndex = CAMPAIGN_MISSIONS.findIndex((mission) => !completed.has(mission.id));
+      if (nextIndex >= 0) {
+        this.missionManager.startCampaign(nextIndex);
+      }
+    }
     this.phone.deliverFriendsMilestone('shift-start');
+  }
+
+  private restoreFromSave(): void {
+    const qaActive =
+      import.meta.env.DEV &&
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('qa') === 'm6';
+    if (qaActive) return;
+
+    const save = this.saveManager.load();
+    if (!save) return;
+
+    if (save.language !== i18n.getLanguage()) {
+      i18n.setLanguage(save.language);
+    }
+    if (save.graphicsQuality !== this.state.graphicsQuality) {
+      this.setGraphicsQuality(save.graphicsQuality);
+    }
+    this.collectibles.restoreCollected(save.collectibleIds);
+    this.collectionProps.syncCollectedFromSave((id) => this.collectibles.hasCollected(id));
+    this.missionManager.restoreProgress(save.money, save.completedMissionIds);
+    this.state.collectedItems = this.collectibles.getCollectedIds();
+    this.state.totalCollectibles = Math.max(
+      this.state.totalCollectibles,
+      this.state.collectedItems.length,
+    );
+    this.syncCollectionProgress();
+  }
+
+  private persistSave(): void {
+    this.saveManager.save({
+      money: this.state.money,
+      completedMissionIds: this.state.completedMissions,
+      collectibleIds: this.collectibles.getCollectedIds(),
+      graphicsQuality: this.state.graphicsQuality,
+      language: i18n.getLanguage(),
+    });
   }
 
   setGraphicsQuality(quality: GraphicsQuality): void {
@@ -341,6 +403,7 @@ export class GameEngine {
     window.removeEventListener('resize', this.handleResize);
     this.input.dispose();
     this.surveillance.dispose();
+    this.steakUI.dispose();
     this.footballUI.dispose();
     this.settingsUI.dispose();
     this.collectionUI.dispose();
@@ -355,6 +418,14 @@ export class GameEngine {
   private bindEvents(): void {
     this.eventBus.on('graphics:changed', ({ quality }) => {
       this.setGraphicsQuality(quality);
+      this.persistSave();
+    });
+
+    this.eventBus.on('save:resetRequested', () => {
+      this.saveManager.clear();
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     });
 
     this.eventBus.on('debug:toggled', () => {
@@ -376,6 +447,7 @@ export class GameEngine {
         this.state.collectedItems.length,
       );
       this.syncCollectionProgress();
+      this.persistSave();
     });
 
     this.eventBus.on('collection:changed', () => {
@@ -403,6 +475,7 @@ export class GameEngine {
       const snap = this.missionManager.getSnapshot();
       this.state.activeMissionTitle = snap.title;
       this.state.activeObjectiveTitle = snap.objectiveTitle;
+      this.persistSave();
     });
 
     this.eventBus.on('mission:scriptEvent', ({ eventId }) => {
@@ -416,13 +489,20 @@ export class GameEngine {
       this.state.completedMissions = snap.completedMissions;
       this.objectiveMarker.setTarget(this.missionManager.getCurrentMarkerPosition());
       this.syncOverlayState();
+      this.persistSave();
     });
 
     this.eventBus.on('mission:completionModal', () => this.syncOverlayState());
 
+    this.eventBus.on('steak:stateChanged', () => this.syncOverlayState());
+
     this.eventBus.on('input:interact', () => {
       if (this.dialogue.isActive()) {
         this.dialogue.advance();
+        return;
+      }
+      if (this.steakMiniGame.isCooking()) {
+        this.steakMiniGame.finishCooking();
         return;
       }
       if (this.state.activeOverlay === 'none') {
@@ -550,15 +630,17 @@ export class GameEngine {
         ? 'mission_complete'
         : this.dialogue.isActive()
           ? 'dialogue'
-          : this.computer.isOpen()
-            ? 'computer'
-            : this.settingsUI.isOpen()
-              ? 'settings'
-              : this.collectionUI.isOpen()
-                ? 'collection'
-                : this.phone.isOpen()
-                  ? 'phone'
-                  : 'none';
+          : this.steakMiniGame.isOverlayOpen()
+            ? 'steak'
+            : this.computer.isOpen()
+              ? 'computer'
+              : this.settingsUI.isOpen()
+                ? 'settings'
+                : this.collectionUI.isOpen()
+                  ? 'collection'
+                  : this.phone.isOpen()
+                    ? 'phone'
+                    : 'none';
 
     if (nextOverlay !== this.state.activeOverlay) {
       this.state.activeOverlay = nextOverlay;
@@ -705,6 +787,7 @@ export class GameEngine {
     );
     this.missionManager.update(rawDt * worldScale, focusPos, playerFloor);
     this.phone.update(rawDt);
+    this.steakMiniGame.update(rawDt);
     this.objectiveMarker.setTarget(this.missionManager.getCurrentMarkerPosition());
     this.objectiveMarker.update(rawDt);
     this.missionUI.updateNavigation(

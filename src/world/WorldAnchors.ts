@@ -72,6 +72,7 @@ export const WORLD_ANCHORS = {
   restaurantF2: {
     counter: anchor('restaurantF2.counter', 37.5, 5.8, -11.6, 2, 'Restaurant'),
     diningCenter: anchor('restaurantF2.diningCenter', 36.8, 5.8, -5.5, 2, 'Restaurant'),
+    kitchenPan: anchor('restaurantF2.kitchenPan', 41.0, 5.8, -12.2, 2, 'Restaurant'),
   },
   showroom: {
     entry: anchor('showroom.entry', 13.5, 0, 2.5, 1, 'Market Hall'),
@@ -95,6 +96,7 @@ export const WORLD_ANCHORS = {
     m2Reach: anchor('warehouse.m2Reach', 17.5, 0, -18.2, 1, 'Warehouse'),
     m4Reach: anchor('warehouse.m4Reach', 21.0, 0, -17.5, 1, 'Warehouse'),
     m4EmergencySwitch: anchor('warehouse.m4EmergencySwitch', 21.0, 0, -37.2, 1, 'Warehouse'),
+    m8Panel: anchor('warehouse.m8Panel', 8.2, 0, -18.5, 1, 'Warehouse'),
     ballPickup: anchor('warehouse.ballPickup', 21.0, 0, -16.8, 1, 'Warehouse'),
     jimmyChooMan: anchor('warehouse.jimmyChooMan', 35.2, 0, -34.8, 1, 'Warehouse'),
     radioBattery: anchor('warehouse.radioBattery', 24.5, 0, -22.5, 1, 'Warehouse'),
@@ -108,6 +110,8 @@ export const WORLD_ANCHORS = {
     kfirCar: anchor('parking.kfirCar', 14.0, 0, 33.5, 1, 'Parking Lot', 0),
     miniPitchCenter: anchor('parking.miniPitchCenter', 34.0, 0, 48.0, 1, 'Parking Lot'),
     omegaSeamaster: anchor('parking.omegaSeamaster', 43.2, 0, 30.5, 1, 'Parking Lot'),
+    deliveryGate: anchor('parking.deliveryGate', 50.5, 0, 58.0, 1, 'Parking Lot'),
+    homeGate: anchor('parking.homeGate', -12.5, 0, 67.0, 1, 'Parking Lot'),
   },
 } as const;
 
