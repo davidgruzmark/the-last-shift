@@ -119,6 +119,13 @@ class CollectibleItem implements Interactable {
     return this.collected;
   }
 
+  /** Restores a previously-collected item from a save file without emitting events. */
+  markCollectedSilently(): void {
+    if (this.collected) return;
+    this.collected = true;
+    this.meshGroup.visible = false;
+  }
+
   getWorldPosition(): THREE.Vector3 {
     return this.worldPos;
   }
@@ -203,5 +210,18 @@ export class CollectibleManager {
       collectedCount: this.collectedIds.size,
       totalCount: Math.max(this.items.length, this.collectedIds.size),
     });
+  }
+
+  /**
+   * Re-applies collected IDs loaded from a save file. Registered world items are
+   * hidden; reward-only IDs (no world mesh) are tracked so collections stay right.
+   */
+  restoreCollected(ids: readonly string[]): void {
+    for (const id of ids) {
+      if (this.collectedIds.has(id)) continue;
+      this.collectedIds.add(id);
+      const item = this.items.find((candidate) => candidate.id === id);
+      item?.markCollectedSilently();
+    }
   }
 }

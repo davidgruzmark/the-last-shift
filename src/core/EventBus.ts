@@ -16,6 +16,7 @@ export interface GameEvents {
   'input:pass': Record<string, never>;
   'input:headlights': Record<string, never>;
   'input:cancel': Record<string, never>;
+  'save:resetRequested': Record<string, never>;
   'football:stateChanged': {
     visible: boolean;
     phase: 'idle' | 'active' | 'goal_pause' | 'ended';

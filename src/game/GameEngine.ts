@@ -36,6 +36,7 @@ import { MissionUI } from '../ui/MissionUI';
 import { PhoneManager } from '../ui/PhoneManager';
 import { PrototypeHUD } from '../ui/PrototypeHUD';
 import { SettingsUI } from '../ui/SettingsUI';
+import { SaveManager } from '../save/SaveManager';
 import { VehicleManager } from '../vehicles/VehicleManager';
 import { CollisionManager } from '../world/CollisionManager';
 import { WORLD_ANCHORS } from '../world/WorldAnchors';
@@ -98,6 +99,7 @@ export class GameEngine {
   private readonly sunLight: THREE.DirectionalLight;
 
   private rafId = 0;
+  private readonly saveManager = new SaveManager();
   private lastTime = 0;
   private accumulator = 0;
   private fpsSamples = 0;
@@ -308,6 +310,7 @@ export class GameEngine {
     this.applyGraphicsQuality(this.state.graphicsQuality);
 
     this.bindEvents();
+    this.restoreFromSave();
     window.addEventListener('resize', this.handleResize);
 
     // Initial sync so first frame renders properly
@@ -321,8 +324,54 @@ export class GameEngine {
       import.meta.env.DEV &&
       typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('qa') === 'm6';
-    this.missionManager.startCampaign(qaM6 ? 5 : 0);
+    if (qaM6) {
+      this.missionManager.startCampaign(5);
+    } else if (this.missionManager.getStatus() === 'idle') {
+      // Resume at the first unfinished mission (index 0 on a fresh save).
+      const completed = new Set(this.missionManager.getSnapshot().completedMissions);
+      const nextIndex = CAMPAIGN_MISSIONS.findIndex((mission) => !completed.has(mission.id));
+      if (nextIndex >= 0) {
+        this.missionManager.startCampaign(nextIndex);
+      }
+    }
     this.phone.deliverFriendsMilestone('shift-start');
+  }
+
+  private restoreFromSave(): void {
+    const qaActive =
+      import.meta.env.DEV &&
+      typeof window !== 'undefined' &&
+      new URLSearchParams(window.location.search).get('qa') === 'm6';
+    if (qaActive) return;
+
+    const save = this.saveManager.load();
+    if (!save) return;
+
+    if (save.language !== i18n.getLanguage()) {
+      i18n.setLanguage(save.language);
+    }
+    if (save.graphicsQuality !== this.state.graphicsQuality) {
+      this.setGraphicsQuality(save.graphicsQuality);
+    }
+    this.collectibles.restoreCollected(save.collectibleIds);
+    this.collectionProps.syncCollectedFromSave((id) => this.collectibles.hasCollected(id));
+    this.missionManager.restoreProgress(save.money, save.completedMissionIds);
+    this.state.collectedItems = this.collectibles.getCollectedIds();
+    this.state.totalCollectibles = Math.max(
+      this.state.totalCollectibles,
+      this.state.collectedItems.length,
+    );
+    this.syncCollectionProgress();
+  }
+
+  private persistSave(): void {
+    this.saveManager.save({
+      money: this.state.money,
+      completedMissionIds: this.state.completedMissions,
+      collectibleIds: this.collectibles.getCollectedIds(),
+      graphicsQuality: this.state.graphicsQuality,
+      language: i18n.getLanguage(),
+    });
   }
 
   setGraphicsQuality(quality: GraphicsQuality): void {
@@ -355,6 +404,14 @@ export class GameEngine {
   private bindEvents(): void {
     this.eventBus.on('graphics:changed', ({ quality }) => {
       this.setGraphicsQuality(quality);
+      this.persistSave();
+    });
+
+    this.eventBus.on('save:resetRequested', () => {
+      this.saveManager.clear();
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     });
 
     this.eventBus.on('debug:toggled', () => {
@@ -376,6 +433,7 @@ export class GameEngine {
         this.state.collectedItems.length,
       );
       this.syncCollectionProgress();
+      this.persistSave();
     });
 
     this.eventBus.on('collection:changed', () => {
@@ -403,6 +461,7 @@ export class GameEngine {
       const snap = this.missionManager.getSnapshot();
       this.state.activeMissionTitle = snap.title;
       this.state.activeObjectiveTitle = snap.objectiveTitle;
+      this.persistSave();
     });
 
     this.eventBus.on('mission:scriptEvent', ({ eventId }) => {
@@ -416,6 +475,7 @@ export class GameEngine {
       this.state.completedMissions = snap.completedMissions;
       this.objectiveMarker.setTarget(this.missionManager.getCurrentMarkerPosition());
       this.syncOverlayState();
+      this.persistSave();
     });
 
     this.eventBus.on('mission:completionModal', () => this.syncOverlayState());

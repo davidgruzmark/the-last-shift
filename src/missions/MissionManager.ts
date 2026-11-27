@@ -89,6 +89,29 @@ export class MissionManager {
     this.activateMission(clamped);
   }
 
+  /**
+   * Re-applies campaign progress loaded from a save file before the campaign is
+   * started. Restores wallet + completed missions; when every mission is already
+   * done the campaign resumes directly in its completed state.
+   */
+  restoreProgress(money: number, completedMissionIds: readonly string[]): void {
+    if (this.status !== 'idle') return;
+    this.money = Math.max(0, Math.floor(money));
+    const validIds = new Set(this.missions.map((mission) => mission.id));
+    for (const id of completedMissionIds) {
+      if (validIds.has(id)) {
+        this.completedMissionIds.add(id);
+      }
+    }
+    if (
+      this.missions.length > 0 &&
+      this.missions.every((mission) => this.completedMissionIds.has(mission.id))
+    ) {
+      this.status = 'campaign_complete';
+      this.emitState();
+    }
+  }
+
   getStatus(): CampaignStatus {
     return this.status;
   }

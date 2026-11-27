@@ -93,6 +93,10 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'settings.graphics.medium': 'Med',
     'settings.graphics.high': 'High',
     'settings.displayTitle': 'Display Mode',
+    'settings.progressTitle': 'Save Progress',
+    'settings.progressDesc': 'Progress is saved automatically on this device. Reset to start a fresh shift.',
+    'settings.resetProgress': 'Reset Progress',
+    'settings.resetConfirm': 'Reset all progress? Completed missions, money and your collection will be erased.',
 
     // Door / Computer / Ambient Collectible Prompts
     'prompt.doorOpen': 'PRESS E TO OPEN DOOR',
@@ -536,6 +540,10 @@ export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
     'settings.graphics.medium': 'בינונית',
     'settings.graphics.high': 'גבוהה',
     'settings.displayTitle': 'תצוגה',
+    'settings.progressTitle': 'שמירת התקדמות',
+    'settings.progressDesc': 'ההתקדמות נשמרת אוטומטית במכשיר הזה. איפוס מתחיל משמרת חדשה.',
+    'settings.resetProgress': 'איפוס התקדמות',
+    'settings.resetConfirm': 'לאפס את כל ההתקדמות? משימות שהושלמו, כסף והאוסף יימחקו.',
 
     // Door / Computer / Ambient Collectible Prompts
     'prompt.doorOpen': 'לחץ E לפתיחת דלת',
