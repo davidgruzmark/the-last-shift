@@ -1816,17 +1816,17 @@ body {
 
 @media (max-width: 899px) {
   .mission-tracker {
-    top: 116px;
+    top: 204px;
     width: calc(100vw - 32px);
     max-width: 420px;
   }
 
   .toast-stack {
-    top: 196px;
+    top: 280px;
   }
 
   .mission-banner,
   .football-scoreboard {
-    top: 204px;
+    top: 288px;
   }
 }

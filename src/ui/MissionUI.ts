@@ -167,6 +167,7 @@ export class MissionUI {
         }
       }),
       i18n.onChange(() => {
+        this.completionModalEl.setAttribute('aria-label', i18n.t('mission.modal.tag'));
         const snap = this.missions.getSnapshot();
         this.missionBadgeEl.textContent =
           snap.status === 'campaign_complete' ? i18n.t('mission.badge.done') : `M0${snap.missionNumber}`;
